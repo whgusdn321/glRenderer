@@ -34,66 +34,87 @@
     <Filter Include="헤더 파일\misc">
       <UniqueIdentifier>{aaab5b22-dc4e-4780-ad87-688b7c83e7d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="리소스 파일\model">
+      <UniqueIdentifier>{f507cfa5-7b01-4b6a-a42a-55e54110b1a7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\glad\src\glad.c">
+    <ClCompile Include="src\main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Shader.cpp">
+    <ClCompile Include="src\openGL\Shader.cpp">
       <Filter>소스 파일\openGL</Filter>
     </ClCompile>
-    <ClCompile Include="stb_image.cpp">
+    <ClCompile Include="src\stb_image.cpp">
       <Filter>소스 파일\misc</Filter>
     </ClCompile>
-    <ClCompile Include="light.cpp">
+    <ClCompile Include="src\light.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh.cpp">
+      <Filter>소스 파일\openGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Model.cpp">
+      <Filter>소스 파일\openGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modelLoaded.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="src\glad.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Quaternion.h">
+    <ClInclude Include="src\math\Quaternion.h">
       <Filter>헤더 파일\math</Filter>
     </ClInclude>
-    <ClInclude Include="Rotator.h">
+    <ClInclude Include="src\math\Rotator.h">
       <Filter>헤더 파일\math</Filter>
     </ClInclude>
-    <ClInclude Include="Shader.h">
+    <ClInclude Include="src\openGL\Shader.h">
       <Filter>헤더 파일\openGL</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="MathHeaders.h">
+    <ClInclude Include="src\math\MathHeaders.h">
       <Filter>헤더 파일\math</Filter>
     </ClInclude>
-    <ClInclude Include="MathUtil.h">
+    <ClInclude Include="src\math\MathUtil.h">
       <Filter>헤더 파일\math</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
+    <ClInclude Include="src\math\Camera.h">
       <Filter>헤더 파일\math</Filter>
     </ClInclude>
-    <ClInclude Include="TransformComponent.h">
+    <ClInclude Include="src\math\Transform.h">
       <Filter>헤더 파일\math</Filter>
     </ClInclude>
-    <ClInclude Include="Trackball.h">
+    <ClInclude Include="src\math\Trackball.h">
       <Filter>헤더 파일\math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh.h">
+      <Filter>헤더 파일\openGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Model.h">
+      <Filter>헤더 파일\openGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="vertex_shader_tex.glsl">
+    <Text Include="shaders\vertex_shader_tex.glsl">
       <Filter>리소스 파일\shaders</Filter>
     </Text>
-    <Text Include="fragment_shader_tex.glsl">
+    <Text Include="shaders\fragment_shader_tex.glsl">
       <Filter>리소스 파일\shaders</Filter>
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="awesomeface.png">
+    <Image Include="model\container\awesomeface.png">
       <Filter>리소스 파일</Filter>
     </Image>
-    <Image Include="wooden_container.jpg">
+    <Image Include="model\container\wooden_container.jpg">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="model\container\container2_specular.png">
       <Filter>리소스 파일</Filter>
     </Image>
   </ItemGroup>
@@ -103,16 +124,22 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="1.colors.vs">
+    <None Include="shaders\1.colors.vs">
       <Filter>리소스 파일\shaders</Filter>
     </None>
-    <None Include="1.colors.fs">
+    <None Include="shaders\1.colors.fs">
       <Filter>리소스 파일\shaders</Filter>
     </None>
-    <None Include="1.light_cube.vs">
+    <None Include="shaders\1.light_cube.vs">
       <Filter>리소스 파일\shaders</Filter>
     </None>
-    <None Include="1.light_cube.fs">
+    <None Include="shaders\1.light_cube.fs">
+      <Filter>리소스 파일\shaders</Filter>
+    </None>
+    <None Include="shaders\guitar.vs">
+      <Filter>리소스 파일\shaders</Filter>
+    </None>
+    <None Include="shaders\guitar.fs">
       <Filter>리소스 파일\shaders</Filter>
     </None>
   </ItemGroup>

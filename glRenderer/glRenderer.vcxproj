@@ -71,7 +71,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\HyunwooJo\Desktop\gl3rdParty\includes;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\HyunwooJo\Desktop\gl3rdParty\includes;C:\Users\HyunwooJo\Desktop\glRenderer\glRenderer\src\math;C:\Users\HyunwooJo\Desktop\glRenderer\glRenderer\src\openGL;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Users\HyunwooJo\Desktop\gl3rdParty\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -112,7 +112,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -132,53 +132,63 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\glad\src\glad.c" />
-    <Text Include="fragment_shader_tex.glsl">
+    <Text Include="shaders\fragment_shader_tex.glsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <FileType>Document</FileType>
     </Text>
-    <ClCompile Include="light.cpp" />
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="src\glad.c" />
+    <ClCompile Include="src\light.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="stb_image.cpp" />
-    <Text Include="vertex_shader_tex.glsl">
+    <ClCompile Include="src\main.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Mesh.cpp" />
+    <ClCompile Include="src\Model.cpp" />
+    <ClCompile Include="src\modelLoaded.cpp" />
+    <ClCompile Include="src\openGL\Shader.cpp" />
+    <ClCompile Include="src\stb_image.cpp" />
+    <Text Include="shaders\vertex_shader_tex.glsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <FileType>Document</FileType>
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="MathHeaders.h" />
-    <ClInclude Include="MathUtil.h" />
-    <ClInclude Include="Quaternion.h" />
+    <ClInclude Include="src\math\Camera.h" />
+    <ClInclude Include="src\math\MathHeaders.h" />
+    <ClInclude Include="src\math\MathUtil.h" />
+    <ClInclude Include="src\Mesh.h" />
+    <ClInclude Include="src\Model.h" />
+    <ClInclude Include="src\math\Quaternion.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="Rotator.h" />
-    <ClInclude Include="Shader.h" />
-    <ClInclude Include="Trackball.h" />
-    <ClInclude Include="TransformComponent.h" />
+    <ClInclude Include="src\math\Rotator.h" />
+    <ClInclude Include="src\openGL\Shader.h" />
+    <ClInclude Include="src\math\Trackball.h" />
+    <ClInclude Include="src\math\Transform.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="awesomeface.png" />
-    <Image Include="wooden_container.jpg" />
+    <Image Include="model\container\awesomeface.png" />
+    <Image Include="model\container\container2_specular.png" />
+    <Image Include="model\container\wooden_container.jpg" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="glRenderer.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="1.colors.fs">
+    <None Include="shaders\1.colors.fs">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </None>
-    <None Include="1.colors.vs">
+    <None Include="shaders\1.colors.vs">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </None>
-    <None Include="1.light_cube.fs">
+    <None Include="shaders\1.light_cube.fs">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </None>
-    <None Include="1.light_cube.vs">
+    <None Include="shaders\1.light_cube.vs">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </None>
+    <None Include="shaders\guitar.fs" />
+    <None Include="shaders\guitar.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
