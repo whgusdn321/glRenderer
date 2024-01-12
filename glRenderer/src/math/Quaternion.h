@@ -5,14 +5,15 @@ struct Quaternion
 public:
 	constexpr Quaternion() = default;
 	explicit constexpr Quaternion(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
-	explicit constexpr Quaternion(const glm::vec3& inAxis, float inAngleDegree)
+	explicit Quaternion(const glm::vec3& inAxis, float inAngleDegree)
 	{
+		const glm::vec3 normalizedAxis = glm::normalize(inAxis);
 		float sin = 0.f, cos = 0.f;
 		Math::getSinCos(sin, cos, inAngleDegree * 0.5f);
 		w = cos;
-		x = sin * inAxis.x;
-		y = sin * inAxis.y;
-		z = sin * inAxis.z;
+		x = sin * normalizedAxis.x;
+		y = sin * normalizedAxis.y;
+		z = sin * normalizedAxis.z;
 
 	}
 	explicit constexpr Quaternion(const Rotator& inRotator)
@@ -92,11 +93,22 @@ public:
 		*this = Quaternion(glm::mat3(xAxis, yAxis, zAxis));
 	}
 	
+	Quaternion& accumulate(const Quaternion& inQuaternion)
+	{
+		glm::vec3 v1(x, y, z), v2(inQuaternion.x, inQuaternion.y, inQuaternion.z);
+		glm::vec3 v = v2 * w + v1 * inQuaternion.w + glm::cross(v2, v1);
+		w = w * inQuaternion.w - glm::dot(v1, v2);
+		x = v.x;
+		y = v.y;
+		z = v.z;
+		return *this;
+	}
+
 	Quaternion operator*=(const Quaternion& inQuaternion)
 	{
 		glm::vec3 v1(x, y, z), v2(inQuaternion.x, inQuaternion.y, inQuaternion.z);
-		w = w * inQuaternion.w - glm::dot(v1, v2);
 		glm::vec3 v = v2 * w + v1 * inQuaternion.w + glm::cross(v1, v2);
+		w = w * inQuaternion.w - glm::dot(v1, v2);
 		x = v.x;
 		y = v.y;
 		z = v.z;
@@ -104,6 +116,7 @@ public:
 	}
 	constexpr glm::vec3 operator*(const glm::vec3& inVector) const
 	{
+		// rotate vector with quaternion
 		glm::vec3 q(x, y, z);
 		glm::vec3 t = glm::cross(q, inVector) * 2.f;
 		return inVector + t * w + glm::cross(q, t);

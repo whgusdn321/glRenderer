@@ -31,8 +31,8 @@ glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 //mouse
 bool firstMouse = true;
-float lastX = width / 2.f;
-float lastY = height / 2.f;
+float lastMouseX = width / 2.f;
+float lastMouseY = height / 2.f;
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -383,16 +383,16 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 
     if (firstMouse)
     {
-        lastX = xpos;
-        lastY = ypos;
+        lastMouseX = xpos;
+        lastMouseY = ypos;
         firstMouse = false;
         return;
     }
 
     if (isTrackballOn)
     {
-        trackball.startX = lastX;
-        trackball.startY = lastY;
+        trackball.startX = lastMouseX;
+        trackball.startY = lastMouseY;
         trackball.endX = xpos;
         trackball.endY = ypos;
         //std::cout << "x trackball: " << trackball.startX << std::endl;
@@ -405,14 +405,14 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     }
 
     // offset
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    float xoffset = xpos - lastMouseX;
+    float yoffset = lastMouseY - ypos; // reversed since y-coordinates go from bottom to top
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 
     // update lastX, lastY for latest values
-    lastX = xpos;
-    lastY = ypos;
+    lastMouseX = xpos;
+    lastMouseY = ypos;
 
     std::cout << "xoffset: " << xoffset << std::endl;
     std::cout << "yoffset: " << yoffset << std::endl;

@@ -1,83 +1,70 @@
 #pragma once
 
 #include <iostream>
+#include <algorithm>
 
 extern int width;
 extern int height;
 
 struct Trackball
 {
-	void rotate();
-	glm::mat4 getRotationMatrix() const;
+	Trackball() = default;
+	Trackball(const Camera& camera) : camera(camera) {}
+
+	glm::mat4 getRotationMatrix(bool isTrackballOn, const float startX,
+								const float startY, const float endX, const float endY);
+
+private:
+	void rotate(const float startX, const float startY, const float endX, const float endY);
 	float getZ(float x, float y) const;
-	// below x, y are screen coordinates
-	float startX;
-	float startY;
-	float endX;
-	float endY;
-	float objectX = 0.f;
-	float objectY = 0.f;
-
-	float r=100.f;
-
+	glm::vec3 get_trackball_vector(float x, float y);
+private:
+	float r = 100.f;
 	Quaternion quaternion;
+	const Camera& camera;
+	Transform transform;
+
 };
-void Trackball::rotate()
+
+void Trackball::rotate(const float startX, const float startY, const float endX, const float endY)
 {
-	const float x1 = startX - width / 2.f;
-	const float y1 = height / 2.f - startY;
-	const float z1 = getZ(x1, y1);
-	std::cout << "x1: " << x1 << "\ty1: " << y1 << "\tz1: " << z1 << std::endl;
-	const float x2 = endX - width / 2.f;
-	const float y2 = height / 2.f - endY;
-	const float z2 = getZ(x2, y2);
-	std::cout << "x2: " << x2 << "\ty2: " << y2 << "\tz2: " << z2 << std::endl;
-
-	glm::vec3 v1(x1, y1, z1);
-	glm::vec3 v2(x2, y2, z2);
-	v1 = glm::normalize(v1);
-	v2 = glm::normalize(v2);
-	std::cout << "v1: " << v1.x << "\t" << v1.y << "\t" << v1.z << std::endl;
-	std::cout << "v2: " << v2.x << "\t" << v2.y << "\t" << v2.z << std::endl;
-
-	glm::vec3 n = glm::cross(v1, v2);
-	std::cout << "n: " << n.x << "\t" << n.y << "\t" << n.z << std::endl;
-	float theta = acos(glm::dot(v1, v2)); // radian
-	std::cout << "theta: " << theta << std::endl;
-
-	Quaternion q_tmp(n, Math::rad2Deg(theta));
-	quaternion *= q_tmp;
+	glm::vec3 va = get_trackball_vector(startX, startY);
+	glm::vec3 vb = get_trackball_vector(endX, endY);
+	float angle = acos(std::min(1.f, glm::dot(va, vb)));
+	glm::vec3 axisInCameraCoord = glm::cross(va, vb);
+	glm::mat3 camera2object = glm::inverse(glm::mat3(camera.getViewMatrix()) * glm::mat3(1.f));
+	glm::vec3 axisInObjectCoord = camera2object * axisInCameraCoord;
+	Quaternion qtr(axisInObjectCoord, Math::rad2Deg(angle));
+	quaternion.accumulate(qtr);
 }
 
-glm::mat4 Trackball::getRotationMatrix() const
+glm::vec3 Trackball::get_trackball_vector(float x, float y) 
 {
-	/*
-	const float x1 = startX - width / 2.f;
-	const float y1 = height/2.f - startY;
-	const float z1 = getZ(x1, y1);
-	std::cout << "x1: " << x1 << "\ty1: " << y1 << "\tz1: " << z1 << std::endl;
-	const float x2 = endX - width / 2.f;
-	const float y2 = height / 2.f - endY;
-	const float z2 = getZ(x2, y2);
-	std::cout << "x2: " << x2 << "\ty2: " << y2 << "\tz2: " << z2 << std::endl;
-	
-	glm::vec3 v1(x1, y1, z1);
-	glm::vec3 v2(x2, y2, z2);
-	v1 = glm::normalize(v1);
-	v2 = glm::normalize(v2);
-	std::cout << "v1: " << v1.x << "\t" << v1.y << "\t" << v1.z << std::endl;
-	std::cout << "v2: " << v2.x << "\t" << v2.y << "\t" << v2.z << std::endl;
-
-	glm::vec3 n = glm::cross(v1, v2);
-	std::cout << "n: " << n.x << "\t" << n.y << "\t" << n.z << std::endl;
-	float theta = acos(glm::dot(v1, v2)); // radian
-	std::cout << "theta: " << theta << std::endl;
-	
-	Quaternion q_tmp(n, Math::rad2Deg(theta));
-	*/
-	Transform tmp(quaternion);
-	return tmp.getModelingMatrix();
+	glm::vec3 P = glm::vec3(
+		( x / width * 2) - 1.0,
+		( y / height * 2) - 1.0,
+		0
+	);
+	P.y = -P.y;
+	float OP_squared = P.x * P.x + P.y * P.y;
+	if (OP_squared <= 1 * 1)
+		P.z = sqrt(1 * 1 - OP_squared);  // Pythagoras
+	else
+		P = glm::normalize(P);  // nearest point
+	return P;
 }
+
+glm::mat4 Trackball::getRotationMatrix(bool isTrackballOn, const float startX,
+									   const float startY, const float endX, const float endY)
+{
+	transform.setRotation(quaternion);
+
+	if (isTrackballOn && !(Math::equalsInTolerance(startX, endX) && Math::equalsInTolerance(startY, endY)))
+		rotate(startX, startY, endX, endY);
+
+	return transform.getModelingMatrix();
+}
+
 float Trackball::getZ(float x, float y) const
 {
 	float rr = r * r;
@@ -88,8 +75,5 @@ float Trackball::getZ(float x, float y) const
 		return sqrtf(rr - (xx + yy));
 	}
 	float div = xx + yy;
-	// if (div < 1.e-4f) {
-	// 	div += 1.e-2f;
-	// }
 	return (rr * 0.5f) / sqrtf(div);
 }

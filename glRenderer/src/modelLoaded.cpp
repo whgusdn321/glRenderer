@@ -2,14 +2,6 @@
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
 #include "Shader.h"
 #include "MathHeaders.h"
 
@@ -34,8 +26,8 @@ glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 //mouse
 bool firstMouse = true;
-float lastX = width / 2.f;
-float lastY = height / 2.f;
+float lastMouseX = width / 2.f;
+float lastMouseY = height / 2.f;
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -95,79 +87,6 @@ int main()
     //Model guitarModel("./model/guitar/backpack.obj");
     Model guitarModel("./model/school_uniform/school_uniform_obj.obj");
     std::cout << "model loaded" << std::endl;
-    /*
-    unsigned int VBO, cubeVAO;
-    glGenVertexArrays(1, &cubeVAO);
-    glGenBuffers(1, &VBO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindVertexArray(cubeVAO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-
-    unsigned int lightCubeVAO;
-    glGenVertexArrays(1, &lightCubeVAO);
-    glBindVertexArray(lightCubeVAO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Texture diffuse
-    unsigned int texture1;
-    glGenTextures(1, &texture1);
-    glBindTexture(GL_TEXTURE_2D, texture1);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    int width, height, nrChannels;
-    // stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    unsigned char* data = stbi_load("container2.png", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        const char* failureReason = stbi_failure_reason();
-        std::cout << "Failed to load image: " << failureReason << std::endl;
-    }
-    stbi_image_free(data);
-
-    // Texture specular 
-    unsigned int texture2;
-    glGenTextures(1, &texture2);
-    glBindTexture(GL_TEXTURE_2D, texture2);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    data = stbi_load("container2_specular.png", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        const char* failureReason = stbi_failure_reason();
-        std::cout << "Failed to load image: " << failureReason << std::endl;
-    }
-    stbi_image_free(data);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture1);
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, texture2);
-    */
     Camera camera;
     camera.setFOV(45.f);
     camera.setNear(0.1f);
@@ -268,6 +187,7 @@ int main()
         guitarShader.use();
         guitarShader.setMat4f("view", view);
         glm::mat4 model = glm::scale(glm::mat4(1.f), glm::vec3(0.01, 0.01, 0.01));
+        model *= trackballSpin;
         guitarShader.setMat4f("model", model);
         guitarModel.draw(guitarShader);
 
@@ -320,16 +240,16 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 
     if (firstMouse)
     {
-        lastX = xpos;
-        lastY = ypos;
+        lastMouseX = xpos;
+        lastMouseY = ypos;
         firstMouse = false;
         return;
     }
 
     if (isTrackballOn)
     {
-        trackball.startX = lastX;
-        trackball.startY = lastY;
+        trackball.startX = lastMouseX;
+        trackball.startY = lastMouseY;
         trackball.endX = xpos;
         trackball.endY = ypos;
         //std::cout << "x trackball: " << trackball.startX << std::endl;
@@ -342,14 +262,14 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     }
 
     // offset
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    float xoffset = xpos - lastMouseX;
+    float yoffset = lastMouseY - ypos; // reversed since y-coordinates go from bottom to top
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 
     // update lastX, lastY for latest values
-    lastX = xpos;
-    lastY = ypos;
+    lastMouseX = xpos;
+    lastMouseY = ypos;
 
     std::cout << "xoffset: " << xoffset << std::endl;
     std::cout << "yoffset: " << yoffset << std::endl;
