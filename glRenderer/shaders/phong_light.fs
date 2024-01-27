@@ -10,25 +10,6 @@ uniform vec3 viewPos;
 struct Material {
 	sampler2D texture_diffuse[8];
     sampler2D texture_specular[8];
-    /*
-    sampler2D texture_diffuse1;
-    sampler2D texture_diffuse2;
-    sampler2D texture_diffuse3;
-    sampler2D texture_diffuse4;
-    sampler2D texture_diffuse5;
-    sampler2D texture_diffuse6;
-    sampler2D texture_diffuse7;
-    sampler2D texture_diffuse8;
-    sampler2D texture_specular0;
-    sampler2D texture_specular1;
-    sampler2D texture_specular2;
-    sampler2D texture_specular3;
-    sampler2D texture_specular4;
-    sampler2D texture_specular5;
-    sampler2D texture_specular6;
-    sampler2D texture_specular7;
-    sampler2D texture_specular8;
-    */
     float shiniess;
 };
 

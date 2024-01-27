@@ -1,16 +1,17 @@
 #pragma once
 
 #include <iostream>
+#include <string>
 #include <glm/gtc/type_ptr.hpp>
 
-class Shader
+class ShaderGL
 {
 public:
     // the program ID
     unsigned int ID;
 
     // constructor reads and builds the shader
-    Shader(const char* vertexPath, const char* fragmentPath);
+    ShaderGL(std::string vertexPath, std::string fragmentPath);
     // use/activate the shader
     void use();
     // utility uniform functions

@@ -1,5 +1,9 @@
 #pragma once
 
+#include <glm/glm.hpp>
+#include "Quaternion.h"
+#include "Rotator.h"
+
 struct Transform
 {
 public:
@@ -40,10 +44,10 @@ public:
 	constexpr Quaternion getRotation() const { return rotation; }
 	constexpr glm::vec3 getScale() const { return scale; }
 
-	glm::mat4 getModelingMatrix() const;
 	constexpr glm::vec3 getLocalX() const { return rotation * glm::vec3(1.f, 0.f, 0.f); }
 	constexpr glm::vec3 getLocalY() const { return rotation * glm::vec3(0.f, 1.f, 0.f); }
 	constexpr glm::vec3 getLocalZ() const { return rotation * glm::vec3(0.f, 0.f, 1.f); }
+	inline glm::mat4 getModelingMatrix() const;
 
 private:
 	glm::vec3 pos = glm::vec3(0.f, 0.f, 0.f);
@@ -51,7 +55,7 @@ private:
 	glm::vec3 scale = glm::vec3(1.f, 1.f, 1.f);
 };
 
-glm::mat4 Transform::getModelingMatrix() const // == TRS Matrix 
+inline glm::mat4 Transform::getModelingMatrix() const // == TRS Matrix 
 {
 	return glm::mat4(
 		glm::vec4(getLocalX() * scale.x, 0.f),
@@ -60,4 +64,3 @@ glm::mat4 Transform::getModelingMatrix() const // == TRS Matrix
 		glm::vec4(pos, 1.f)
 	);
 }
-

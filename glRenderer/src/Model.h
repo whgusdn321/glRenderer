@@ -2,30 +2,56 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+#include <glm/glm.hpp>
+#include <stb_image.h>
 
-#include "Shader.h"
-#include "Mesh.h"
+#include "BoundingBox.h"
+#include "VertexGL.h"
+#include "TextureGL.h"
 
-class Model
-{
-public:
-    Model(std::string path)
+struct Vertex {
+    glm::vec3 position;
+    glm::vec3 normal;
+    glm::vec2 texCoords;
+};
+
+struct Texture {
+    ~Texture()
     {
-        loadModel(path);
+        stbi_image_free(data);
     }
-    void draw(Shader& shader);
-private:
-    // model data
-    std::vector<Mesh> meshes;
-    std::map<std::string, Texture> path2texture;
-    std::string directory;
+    std::string texPath;
+    std::string type; // texture_diffuse/texture_specular
+    int width;
+    int height;
+    int nrChannels;
+    unsigned char* data;
+};
 
-    void loadModel(std::string path);
-    void processNode(aiNode* node, const aiScene* scene);
-    Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-    std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type,
-        std::string typeName);
+struct Mesh {
+    // mesh data
+    std::vector<Vertex>       vertices;
+    std::vector<unsigned int> indices;
+    std::vector<std::shared_ptr<Texture>> textures;
+
+    std::shared_ptr<VertexGL> vertexGL;
+    std::vector<std::shared_ptr<TextureGL>> textureGLs;
+
+    BoundingBox aabb;
+    glm::mat4 transform;
+    int meshPrimitiveCnt;
+};
+
+struct Model
+{
+    std::string directory;
+    std::string path; // relative path of the model (ex : ./model/guitar/guitar.obj
+
+    std::vector<Mesh> meshes;
+    glm::mat4 centeredTransform;
+    BoundingBox rootAABB;
+    unsigned int primitiveCnt;
+    unsigned int vertexCnt;
+    std::string modelName;
+
 };
