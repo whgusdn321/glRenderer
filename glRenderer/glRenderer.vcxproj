@@ -137,6 +137,15 @@
       <FileType>Document</FileType>
     </Text>
     <ClCompile Include="src\3rdParty\glad.c" />
+    <ClCompile Include="src\3rdParty\imgui\imgui.cpp" />
+    <ClCompile Include="src\3rdParty\imgui\imgui_demo.cpp" />
+    <ClCompile Include="src\3rdParty\imgui\imgui_draw.cpp" />
+    <ClCompile Include="src\3rdParty\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="src\3rdParty\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="src\3rdParty\imgui\imgui_stdlib.cpp" />
+    <ClCompile Include="src\3rdParty\imgui\imgui_tables.cpp" />
+    <ClCompile Include="src\3rdParty\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\ConfigPanel.cpp" />
     <ClCompile Include="src\math\BoundingBox.cpp" />
     <ClCompile Include="src\math\Camera.cpp" />
     <ClCompile Include="src\math\Quaternion.cpp" />
@@ -155,6 +164,18 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\3rdParty\imgui\imconfig.h" />
+    <ClInclude Include="src\3rdParty\imgui\imgui.h" />
+    <ClInclude Include="src\3rdParty\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="src\3rdParty\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="src\3rdParty\imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="src\3rdParty\imgui\imgui_internal.h" />
+    <ClInclude Include="src\3rdParty\imgui\imgui_stdlib.h" />
+    <ClInclude Include="src\3rdParty\imgui\imstb_rectpack.h" />
+    <ClInclude Include="src\3rdParty\imgui\imstb_textedit.h" />
+    <ClInclude Include="src\3rdParty\imgui\imstb_truetype.h" />
+    <ClInclude Include="src\RenderResources.h" />
+    <ClInclude Include="src\ConfigPanel.h" />
     <ClInclude Include="src\math\BoundingBox.h" />
     <ClInclude Include="src\math\Camera.h" />
     <ClInclude Include="src\math\MathUtil.h" />
@@ -193,6 +214,10 @@
     </None>
     <None Include="shaders\phong_light.fs" />
     <None Include="shaders\phong_light.vs" />
+    <None Include="src\3rdParty\imgui\imgui.natstepfilter" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="src\3rdParty\imgui\imgui.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

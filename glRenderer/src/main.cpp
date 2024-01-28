@@ -8,6 +8,9 @@
 #include "Camera.h"
 #include "Trackball.h"
 
+#include "RenderResources.h"
+#include "ConfigPanel.h"
+
 #include "Model.h"
 #include "ModelLoader.h"
 #include "RenderHelper.h"
@@ -75,22 +78,18 @@ int main()
     // configure global opengl state
     glEnable(GL_DEPTH_TEST);
 
-    Camera camera;
-    camera.setFOV(45.f);
-    camera.setNear(0.01f);
-    camera.setFar(100.f);
-    camera.setPosition(0.0f, 0.0f, 8.0f);
-    camera.setLookAtTargetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
-    
-    Trackball trackball(camera);
-
-    ModelLoader modelLoader;
-    std::shared_ptr<Model> model = modelLoader.loadModel("school_uniform");
 
     RenderHelper renderHelper;
+    ModelLoader modelLoader;
 
-    auto shader = renderHelper.setupShaderGL(PhongLight);
-    renderHelper.setupStaticUniforms(shader, PhongLight, camera);
+    RenderResources rs(modelLoader, renderHelper);
+
+    ConfigPanel configPanel(window, width, height, rs);
+    configPanel.setReloadModelFunc([&](const std::string modelName) -> std::shared_ptr<Model> {
+        return rs.modelLoader.loadModel(modelName);
+        });
+
+    renderHelper.setupStaticUniforms(rs.shaderGL, PhongLight, rs.camera);
 
     float beforeFrameX = lastMouseX;
     float beforeFrameY = lastMouseY;
@@ -104,7 +103,7 @@ int main()
         float curFrameX = lastMouseX;
         float curFrameY = lastMouseY;
 
-        trackball.rotate(beforeFrameX, beforeFrameY, curFrameX, curFrameY);
+        rs.trackball.rotate(beforeFrameX, beforeFrameY, curFrameX, curFrameY);
 
         processInput(window);
 
@@ -112,11 +111,12 @@ int main()
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        renderHelper.setupVertexGL(model);
-        renderHelper.setupTextureGL(model);
-        renderHelper.setupDynamicUniforms(shader, model, camera, trackball);
-        renderHelper.drawFrame(shader, model);
+        renderHelper.setupVertexGL(rs.modelPtr);
+        renderHelper.setupTextureGL(rs.modelPtr);
+        renderHelper.setupDynamicUniforms(rs.shaderGL, rs.modelPtr, rs.camera, rs.trackball);
+        renderHelper.drawFrame(rs.shaderGL, rs.modelPtr, rs.trackball);
     
+        configPanel.draw();
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         glfwSwapBuffers(window);
         glfwPollEvents(); // callback methods

@@ -49,7 +49,7 @@ void ModelLoader::processNode(std::shared_ptr<Model> model, aiNode* aiNode, cons
     {
         aiMesh* mesh = aiScene->mMeshes[aiNode->mMeshes[i]];
         Mesh ourMesh = processMesh(mesh, aiScene);
-        ourMesh.transform = nodeTransform;
+        ourMesh.transform = currTransform;
 
         BoundingBox bounds = ourMesh.aabb.transform(currTransform);
         model->rootAABB.merge(bounds);
@@ -196,9 +196,9 @@ glm::mat4 ModelLoader::adjustModelCenter(const BoundingBox& bbox)
 {
     glm::mat4 modelTransform(1.0f);
     glm::vec3 trans = (bbox.max + bbox.min) / -2.f;
-    trans.y = -bbox.min.y;
+    // trans.y = -bbox.min.y;
     float bounds_len = glm::length(bbox.max - bbox.min);
-    modelTransform = glm::translate(modelTransform, trans);
     modelTransform = glm::scale(modelTransform, glm::vec3(3.f / bounds_len));
+    modelTransform = glm::translate(modelTransform, trans);
     return modelTransform;
 }

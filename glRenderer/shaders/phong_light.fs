@@ -63,7 +63,7 @@ vec3 calcDirLight(DirectionalLight light)
     
     ambient += light.ambient *vec3(texture(material.texture_diffuse[1], TexCoords));
     diffuse += light.diffuse * diff * vec3(texture(material.texture_diffuse[1], TexCoords));
-    // specular += light.specular * spec * vec3(texture(material.texture_specular[1], TexCoords));
+    specular += light.specular * spec * vec3(texture(material.texture_specular[1], TexCoords));
     //for (int i=1; i<=8; ++i)
     //{
     //    ambient += light.ambient *vec3(texture(material.texture_diffuse[i], TexCoords));
@@ -71,8 +71,8 @@ vec3 calcDirLight(DirectionalLight light)
     //    specular += light.specular * spec * vec3(texture(material.texture_specular[i], TexCoords));
     //}
 
-    //return ambient + diffuse + specular;
-    return ambient + diffuse; 
+    return ambient + diffuse + specular;
+    //return ambient + diffuse; 
 }
 /*
 vec3 CalcPointLight(PointLight pointLight)

@@ -105,19 +105,29 @@ public:
 	{
 		sPtr->use();
 		sPtr->setMat4f("view", camera.getViewMatrix());
-		glm::mat4 modelMat = mPtr->centeredTransform * trackball.getRotationMatrix();
-		sPtr->setMat4f("model", modelMat);
+	}
 
+	void setupModelUniform(
+		const std::shared_ptr<ShaderGL> sPtr,
+		const glm::mat4& meshTransform,
+		const glm::mat4& centeredTransform,
+		const glm::mat4& rotationByMouse
+	)
+	{
+		sPtr->use();
+		sPtr->setMat4f("model", rotationByMouse * centeredTransform *  meshTransform );
 	}
 	
 	void drawFrame(
 		std::shared_ptr<ShaderGL> sPtr,
-		const std::shared_ptr<Model> mPtr
+		const std::shared_ptr<Model> mPtr,
+		const Trackball& trackball
 	)
 	{
 		for (const Mesh& mesh : mPtr->meshes)
 		{
 			setupSamplers(sPtr, mesh);
+			setupModelUniform(sPtr, mesh.transform, mPtr->centeredTransform, trackball.getRotationMatrix());
 			mesh.vertexGL->bind();
 			glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
 			mesh.vertexGL->unBind();
