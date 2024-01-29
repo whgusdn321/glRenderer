@@ -11,6 +11,7 @@
 #include "ShaderGL.h"
 #include "Camera.h"
 #include "Trackball.h"
+#include "Frustum.h"
 
 extern bool isTrackballOn;
 
@@ -129,25 +130,35 @@ public:
 
 	void setupModelUniform(
 		const std::shared_ptr<ShaderGL> sPtr,
-		const glm::mat4& meshTransform,
-		const glm::mat4& centeredTransform,
+		const glm::mat4& modelMat,
 		const glm::mat4& rotationByMouse
 	)
 	{
 		sPtr->use();
-		sPtr->setMat4f("model", rotationByMouse * centeredTransform *  meshTransform );
+		sPtr->setMat4f("model", rotationByMouse * modelMat);
 	}
 	
 	void drawFrame(
 		std::shared_ptr<ShaderGL> sPtr,
 		const std::shared_ptr<Model> mPtr,
-		const Trackball& trackball
+		const Trackball& trackball,
+		Frustum& frustum,
+		const Camera& camera
 	)
 	{
+		// update frustum with camera's current perspective matrix
+		frustum.update(camera.getPerspectiveMatrix());
+
 		for (const Mesh& mesh : mPtr->meshes)
 		{
+			const glm::mat4 modelMat = mPtr->centeredTransform * mesh.transform;
+
+			const BoundingBox transformedBbox = mesh.aabb.transform(modelMat);
+			if (frustum.checkBound(transformedBbox) == BoundCheckRet::Outside)
+				continue;
+
 			setupSamplers(sPtr, mesh);
-			setupModelUniform(sPtr, mesh.transform, mPtr->centeredTransform, trackball.getRotationMatrix());
+			setupModelUniform(sPtr, modelMat, trackball.getRotationMatrix());
 			mesh.vertexGL->bind();
 			glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
 			mesh.vertexGL->unBind();

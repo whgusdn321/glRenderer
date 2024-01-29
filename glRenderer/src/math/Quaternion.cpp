@@ -1,5 +1,7 @@
 #include "Quaternion.h"
 
+// Referenced from https://github.com/onlybooks/gamemath/blob/16-1/Source/Runtime/Math/Public/Quaternion.h
+
 Quaternion::Quaternion(const glm::vec3& inAxis, float inAngleDegree)
 {
 	const glm::vec3 normalizedAxis = glm::normalize(inAxis);

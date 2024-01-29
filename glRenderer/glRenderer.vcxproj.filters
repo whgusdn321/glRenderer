@@ -93,9 +93,6 @@
     <ClCompile Include="src\3rdParty\imgui\imgui_widgets.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\ConfigPanel.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\math\Quaternion.h">
@@ -174,6 +171,12 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="src\ConfigPanel.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="src\math\Plane.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="src\math\Frustum.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

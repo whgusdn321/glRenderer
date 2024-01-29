@@ -23,7 +23,7 @@ std::shared_ptr<Model> ModelLoader::loadModel(std::string modelName)
 	Assimp::Importer importer;
 
 	//todo: modelName -> path + modelname
-	const aiScene* scene = importer.ReadFile(model->path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes);
+	const aiScene* scene = importer.ReadFile(model->path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes | aiProcess_GenNormals);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{

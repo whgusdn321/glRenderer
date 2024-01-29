@@ -1,20 +1,5 @@
 #include "Camera.h"
 
-void Camera::setFOV(float inFOV)
-{
-	FOV = inFOV;
-}
-
-void Camera::setNear(float inNearZ)
-{
-	nearZ = inNearZ; 
-}
-
-void Camera::setFar(float inFarZ) 
-{
-	farZ = inFarZ; 
-}
-
 void Camera::setPosition(float inX, float inY, float inZ)
 {
 	transform.setPosition(glm::vec3(inX, inY, inZ));

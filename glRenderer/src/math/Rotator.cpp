@@ -1,5 +1,7 @@
 #include "Rotator.h"
 
+// Referenced from https://github.com/onlybooks/gamemath/blob/16-1/Source/Runtime/Math/Public/Rotator.h
+
 void Rotator::Clamp()
 {
 	Yaw = GetAxisClampedValue(Yaw);

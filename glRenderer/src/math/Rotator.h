@@ -2,6 +2,8 @@
 
 #include "MathUtil.h"
 
+// Referenced from https://github.com/onlybooks/gamemath/blob/16-1/Source/Runtime/Math/Public/Rotator.h
+
 struct Rotator
 {
 public:

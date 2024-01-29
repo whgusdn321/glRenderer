@@ -43,7 +43,9 @@ void BoundingBox::merge(const BoundingBox& box)
 
 bool BoundingBox::intersects(const BoundingBox& box)
 {
-	return false;
+	return ((min.x >= box.min.x && min.x <= box.max.x) || (box.min.x >= min.x && box.min.x <= max.x)) &&
+		((min.y >= box.min.y && min.y <= box.max.y) || (box.min.y >= min.y && box.min.y <= max.y)) &&
+		((min.z >= box.min.z && min.z <= box.max.z) || (box.min.z >= min.z && box.min.z <= max.z));
 }
 
 void BoundingBox::updateMinMax(glm::vec3* point, glm::vec3* min, glm::vec3* max)

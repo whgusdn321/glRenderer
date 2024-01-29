@@ -3,6 +3,8 @@
 #include <math.h>
 #include <ctgmath> 
 
+// Referenced from https://github.com/onlybooks/gamemath/blob/16-1/Source/Runtime/Math/Public/MathUtil.h
+
 struct Math
 {
 	static constexpr float PI = { 3.14159265358979323846f };

@@ -114,7 +114,7 @@ int main()
         renderHelper.setupVertexGL(rs.modelPtr);
         renderHelper.setupTextureGL(rs.modelPtr);
         renderHelper.setupDynamicUniforms(rs.shaderGL, rs.modelPtr, rs.camera, rs.trackball);
-        renderHelper.drawFrame(rs.shaderGL, rs.modelPtr, rs.trackball);
+        renderHelper.drawFrame(rs.shaderGL, rs.modelPtr, rs.trackball, rs.frustum, rs.camera);
     
         configPanel.draw();
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

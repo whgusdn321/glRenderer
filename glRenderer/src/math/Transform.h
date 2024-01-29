@@ -4,6 +4,8 @@
 #include "Quaternion.h"
 #include "Rotator.h"
 
+// Referenced from https://github.com/onlybooks/gamemath/blob/16-1/Source/Runtime/Math/Public/Transform.h
+
 struct Transform
 {
 public:

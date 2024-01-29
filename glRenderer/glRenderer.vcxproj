@@ -145,7 +145,6 @@
     <ClCompile Include="src\3rdParty\imgui\imgui_stdlib.cpp" />
     <ClCompile Include="src\3rdParty\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\3rdParty\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="src\ConfigPanel.cpp" />
     <ClCompile Include="src\math\BoundingBox.cpp" />
     <ClCompile Include="src\math\Camera.cpp" />
     <ClCompile Include="src\math\Quaternion.cpp" />
@@ -173,6 +172,8 @@
     <ClInclude Include="src\3rdParty\imgui\imstb_rectpack.h" />
     <ClInclude Include="src\3rdParty\imgui\imstb_textedit.h" />
     <ClInclude Include="src\3rdParty\imgui\imstb_truetype.h" />
+    <ClInclude Include="src\math\Frustum.h" />
+    <ClInclude Include="src\math\Plane.h" />
     <ClInclude Include="src\RenderResources.h" />
     <ClInclude Include="src\ConfigPanel.h" />
     <ClInclude Include="src\math\BoundingBox.h" />
