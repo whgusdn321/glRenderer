@@ -93,6 +93,26 @@ public:
 			sPtr->setVec3f("directionalLight.diffuse", 0.5f, 0.5f, 0.5f); // darken diffuse light a bit
 			sPtr->setVec3f("directionalLight.specular", 1.0f, 1.0f, 1.0f);
 			sPtr->setVec3f("directionalLight.direction", -0.2f, -1.0f, -0.3f);
+
+			sPtr->setVec3f("pointLights[0].position", 3.f, 3.f, 3.f);
+			sPtr->setVec3f("pointLights[1].position", -3.f, -3.f, 3.f);
+			sPtr->setVec3f("pointLights[2].position", -3.f, 3.f, -3.f);
+			sPtr->setVec3f("pointLights[3].position", 3.f, -3.f, -3.f);
+			for (int pl = 0; pl < 4; ++pl) {
+				sPtr->setVec3f("pointLights[" + std::to_string(pl) + "].ambient", 0.1f, 0.1f, 0.1f);
+				sPtr->setVec3f("pointLights[" + std::to_string(pl) + "].diffuse", 0.2f, 0.2f, 0.2f);
+				sPtr->setVec3f("pointLights[" + std::to_string(pl) + "].specular", 1.f, 1.f, 1.f);
+				sPtr->setFloat("pointLights[" + std::to_string(pl) + "].constant", 1.f);
+				sPtr->setFloat("pointLights[" + std::to_string(pl) + "].linear", 0.07f);
+				sPtr->setFloat("pointLights[" + std::to_string(pl) + "].quadratic", 0.017f);
+			}
+			sPtr->setVec3f("flashLight.position", camera.getPosition());
+			sPtr->setVec3f("flashLight.direction", camera.getFrontAxis());
+			sPtr->setFloat("flashLight.cutOff", glm::cos(glm::radians(12.5f)));
+			sPtr->setFloat("flashLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+			sPtr->setVec3f("flashLight.ambient", 0.1f, 0.1f, 0.1f);
+			sPtr->setVec3f("flashLight.flash", 0.3f, 0.3f, 0.3f);
+			
 		}
 	}
 

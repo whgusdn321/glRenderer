@@ -63,9 +63,6 @@
     <ClCompile Include="src\math\Trackball.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\math\Transform.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="src\math\BoundingBox.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>

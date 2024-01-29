@@ -177,9 +177,6 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     // update lastX, lastY for latest values
     lastMouseX = xpos;
     lastMouseY = ypos;
-
-    std::cout << "xoffset: " << xoffset << std::endl;
-    std::cout << "yoffset: " << yoffset << std::endl;
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)

@@ -2,9 +2,6 @@
 
 glm::mat4 Trackball::getRotationMatrix() const
 {
-	//transform.setRotation(quaternion);
-	//if (isTrackballOn && !(Math::equalsInTolerance(startX, endX) && Math::equalsInTolerance(startY, endY)))
-	//	rotate(startX, startY, endX, endY);
 	return transform.getModelingMatrix();
 }
 

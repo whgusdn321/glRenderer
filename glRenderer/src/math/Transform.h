@@ -36,7 +36,6 @@ public:
 		rotation = Quaternion(r);
 	}
 	constexpr void setRotation(const Rotator& inRotator) { rotation = Quaternion(inRotator); }
-	// void SetRotation(const glm::mat3& InMatrix) { rotation = Quaternion(InMatrix); }
 	constexpr void setRotation(const Quaternion& inQuaternion) { rotation = inQuaternion; }
 	void setScale(const glm::vec3& inScale) { scale = inScale; }
 

@@ -151,7 +151,6 @@
     <ClCompile Include="src\math\Quaternion.cpp" />
     <ClCompile Include="src\math\Rotator.cpp" />
     <ClCompile Include="src\math\Trackball.cpp" />
-    <ClCompile Include="src\math\Transform.cpp" />
     <ClCompile Include="src\main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
