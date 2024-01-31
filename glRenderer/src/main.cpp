@@ -30,16 +30,10 @@ int height = 600;
 Camera camera(60.f, 0.01f, 100.f);
 Trackball trackball(camera);
 
-// camera
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
 //mouse
 bool firstMouse = true;
 float lastMouseX = width / 2.f;
 float lastMouseY = height / 2.f;
-float scrollOffset = 0;
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -48,9 +42,6 @@ float lastFrame = 0.0f;
 // trackball
 bool isTrackballOn = false;
 bool isTranslateOn = false;
-
-// lighting
-glm::vec3 lightPos(1.2f, 1.0f, 3.0f);
 
 int main()
 {
@@ -149,16 +140,6 @@ void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-
-    float cameraSpeed = static_cast<float>(2.5 * deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
 
 // glfw: whenever the mouse moves, this callback is called
@@ -220,7 +201,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    scrollOffset = yoffset;
+    float scrollOffset = static_cast<float>(yoffset);
     // update camera FOV & frustum's 6 planes 
     if (!Math::equalsInTolerance(scrollOffset, 0.f))
     {

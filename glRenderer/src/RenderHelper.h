@@ -14,8 +14,6 @@
 #include "Frustum.h"
 #include "MathUtil.h"
 
-// extern bool isTrackballOn;
-// extern bool scrollOffset;
 extern Camera camera;
 extern Trackball trackball;
 
@@ -147,11 +145,13 @@ public:
 		const std::shared_ptr<Model> mPtr
 	)
 	{
+		const glm::mat4 viewMat = camera.getViewMatrix();
+
 		for (const Mesh& mesh : mPtr->meshes)
 		{
 			const glm::mat4 modelMat = mPtr->centeredTransform * mesh.transform;
 
-			const BoundingBox transformedBbox = mesh.aabb.transform(modelMat);
+			const BoundingBox transformedBbox = mesh.aabb.transform(viewMat * modelMat);
 			if (camera.checkBound(transformedBbox) == BoundCheckRet::Outside)
 				continue;
 

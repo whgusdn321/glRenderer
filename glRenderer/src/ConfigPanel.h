@@ -92,5 +92,5 @@ private:
 	RenderResources& renderResources;
 	int width, height;
 	std::function<std::shared_ptr<Model>(std::string modelName)> reloadModelFunc;
-	std::vector<const char*> modelNames = { "school_uniform", "guitar", "cathedral", "rodin"};
+	std::vector<const char*> modelNames = { "school_uniform", "guitar", "rodin", "dog"};
 };
