@@ -5,7 +5,9 @@ Made with OpenGL3, GLFW
 - Multiple model loading
 - Phong Light Shader
 - Trackball
-
+- Bounding Box culling
+- automative model position
+  
 # Capture Image(GIF)
 ![glRenderer_dirLightGIF](https://github.com/whgusdn321/glRenderer/assets/43023361/021f00cd-2604-4e52-a921-d617c3388771)
 
