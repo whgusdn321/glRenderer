@@ -6,7 +6,7 @@ Made with OpenGL3, GLFW
 - Phong Light Shader
 - Trackball
 - Bounding Box culling
-- automative model position
+- Automatic Model Position Conversion
   
 # Captured Image(GIF)
 ![glRenderer_gif1 31](https://github.com/whgusdn321/glRenderer/assets/43023361/5018f357-6dc0-4375-bac2-72e7f49d4863)
