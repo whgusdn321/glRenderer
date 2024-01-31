@@ -12,8 +12,12 @@
 #include "Camera.h"
 #include "Trackball.h"
 #include "Frustum.h"
+#include "MathUtil.h"
 
-extern bool isTrackballOn;
+// extern bool isTrackballOn;
+// extern bool scrollOffset;
+extern Camera camera;
+extern Trackball trackball;
 
 enum ShaderType {
 	PhongLight = 0,
@@ -80,14 +84,11 @@ public:
 	}
 
 	void setupStaticUniforms(
-		std::shared_ptr<ShaderGL> sPtr, const ShaderType sType, Camera& camera)
+		std::shared_ptr<ShaderGL> sPtr, const ShaderType sType)
 	{
 		sPtr->use();
 		if (sType == PhongLight)
 		{
-			sPtr->setMat4f("projection", camera.getPerspectiveMatrix());
-			sPtr->setVec3f("viewPos", camera.getPosition());
-
 			sPtr->setFloat("material.shiniess", 32.0f);
 
 			sPtr->setVec3f("directionalLight.ambient", 0.2f, 0.2f, 0.2f);
@@ -117,18 +118,21 @@ public:
 		}
 	}
 
-	void setupDynamicUniforms(
-		std::shared_ptr<ShaderGL> sPtr,
-		const std::shared_ptr<Model> mPtr,
-		const Camera& camera,
-		const Trackball& trackball
+	void setupCameraUniform(
+		std::shared_ptr<ShaderGL> sPtr, 
+		ShaderType sType
 	)
 	{
-		sPtr->use();
-		sPtr->setMat4f("view", camera.getViewMatrix());
+		if (sType == PhongLight)
+		{
+			sPtr->use();
+			sPtr->setMat4f("projection", camera.getPerspectiveMatrix());
+			sPtr->setVec3f("viewPos", camera.getPosition());
+			sPtr->setMat4f("view", camera.getViewMatrix());
+		}
 	}
 
-	void setupModelUniform(
+	void setupMeshUniform(
 		const std::shared_ptr<ShaderGL> sPtr,
 		const glm::mat4& modelMat,
 		const glm::mat4& rotationByMouse
@@ -140,25 +144,19 @@ public:
 	
 	void drawFrame(
 		std::shared_ptr<ShaderGL> sPtr,
-		const std::shared_ptr<Model> mPtr,
-		const Trackball& trackball,
-		Frustum& frustum,
-		const Camera& camera
+		const std::shared_ptr<Model> mPtr
 	)
 	{
-		// update frustum with camera's current perspective matrix
-		frustum.update(camera.getPerspectiveMatrix());
-
 		for (const Mesh& mesh : mPtr->meshes)
 		{
 			const glm::mat4 modelMat = mPtr->centeredTransform * mesh.transform;
 
 			const BoundingBox transformedBbox = mesh.aabb.transform(modelMat);
-			if (frustum.checkBound(transformedBbox) == BoundCheckRet::Outside)
+			if (camera.checkBound(transformedBbox) == BoundCheckRet::Outside)
 				continue;
 
 			setupSamplers(sPtr, mesh);
-			setupModelUniform(sPtr, modelMat, trackball.getRotationMatrix());
+			setupMeshUniform(sPtr, modelMat, trackball.getRotationMatrix());
 			mesh.vertexGL->bind();
 			glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
 			mesh.vertexGL->unBind();
@@ -202,6 +200,7 @@ public:
 		}
 		return std::make_pair(vsPath, fsPath);
 	}
+
 private:
 	std::map<std::string, std::shared_ptr<TextureGL>> textureGLCache; // key : texture path
 	std::map<ShaderType, std::shared_ptr<ShaderGL>> shaderGLCache; 

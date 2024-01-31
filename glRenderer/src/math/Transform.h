@@ -56,7 +56,7 @@ private:
 	glm::vec3 scale = glm::vec3(1.f, 1.f, 1.f);
 };
 
-inline glm::mat4 Transform::getModelingMatrix() const // == TRS Matrix 
+inline glm::mat4 Transform::getModelingMatrix() const // == T(rans)R(otation)S(cale) Matrix 
 {
 	return glm::mat4(
 		glm::vec4(getLocalX() * scale.x, 0.f),

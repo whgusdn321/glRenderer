@@ -26,6 +26,10 @@ void processInput(GLFWwindow* window);
 //viewport
 int width = 800;
 int height = 600;
+
+Camera camera(60.f, 0.01f, 100.f);
+Trackball trackball(camera);
+
 // camera
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -35,6 +39,7 @@ glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 bool firstMouse = true;
 float lastMouseX = width / 2.f;
 float lastMouseY = height / 2.f;
+float scrollOffset = 0;
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -42,6 +47,7 @@ float lastFrame = 0.0f;
 
 // trackball
 bool isTrackballOn = false;
+bool isTranslateOn = false;
 
 // lighting
 glm::vec3 lightPos(1.2f, 1.0f, 3.0f);
@@ -84,12 +90,16 @@ int main()
 
     RenderResources rs(modelLoader, renderHelper);
 
+    camera.setPosition(0.0f, 0.0f, 5.0f);
+    // camera.setPosition(-1.5f, 3.f, 3.f);
+    camera.setLookAtTargetRotation(glm::vec3(0.0f, 0.f, 0.0f));
+
     ConfigPanel configPanel(window, width, height, rs);
     configPanel.setReloadModelFunc([&](const std::string modelName) -> std::shared_ptr<Model> {
         return rs.modelLoader.loadModel(modelName);
         });
 
-    renderHelper.setupStaticUniforms(rs.shaderGL, PhongLight, rs.camera);
+    renderHelper.setupStaticUniforms(rs.shaderGL, PhongLight);
 
     float beforeFrameX = lastMouseX;
     float beforeFrameY = lastMouseY;
@@ -103,7 +113,7 @@ int main()
         float curFrameX = lastMouseX;
         float curFrameY = lastMouseY;
 
-        rs.trackball.rotate(beforeFrameX, beforeFrameY, curFrameX, curFrameY);
+        trackball.rotate(beforeFrameX, beforeFrameY, curFrameX, curFrameY);
 
         processInput(window);
 
@@ -113,8 +123,8 @@ int main()
 
         renderHelper.setupVertexGL(rs.modelPtr);
         renderHelper.setupTextureGL(rs.modelPtr);
-        renderHelper.setupDynamicUniforms(rs.shaderGL, rs.modelPtr, rs.camera, rs.trackball);
-        renderHelper.drawFrame(rs.shaderGL, rs.modelPtr, rs.trackball, rs.frustum, rs.camera);
+        renderHelper.setupCameraUniform(rs.shaderGL, PhongLight);
+        renderHelper.drawFrame(rs.shaderGL, rs.modelPtr);
     
         configPanel.draw();
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -174,6 +184,12 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 
+    if (isTranslateOn)
+    {
+        // cameta translate logic here
+        camera.rotateByPixels(yoffset, xoffset);
+    }
+
     // update lastX, lastY for latest values
     lastMouseX = xpos;
     lastMouseY = ypos;
@@ -189,6 +205,14 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     {
         isTrackballOn = false;
     }
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+    {
+        isTranslateOn = true;
+    }
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
+    {
+        isTranslateOn = false;
+    }
 
 }
 
@@ -196,5 +220,10 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    std::cout << "scroll yoffset: " << yoffset << std::endl;
+    scrollOffset = yoffset;
+    // update camera FOV & frustum's 6 planes 
+    if (!Math::equalsInTolerance(scrollOffset, 0.f))
+    {
+        camera.accumulateFOV( scrollOffset);
+    }
 }

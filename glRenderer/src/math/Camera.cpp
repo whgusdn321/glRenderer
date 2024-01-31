@@ -1,4 +1,32 @@
 #include "Camera.h"
+#include <iostream>
+
+void Camera::accumulateFOV(float scrollChange)
+{
+	FOV += scrollChange;
+	if (FOV < FOVmin)
+		FOV = FOVmin;
+	if (FOV > FOVmax)
+		FOV = FOVmax;
+}
+
+void Camera::rotateByPixels(float dy, float dx)
+{
+	Rotator yawRollPitch(-dx, 0, -dy);
+	Quaternion q(yawRollPitch);
+	glm::vec3 nCameraPos = q * getPosition();
+	setPosition(nCameraPos.x, nCameraPos.y, nCameraPos.z);
+}
+
+void Camera::setNear(float inNearZ)
+{
+	nearZ = inNearZ;
+}
+
+void Camera::setFar(float inFarZ)
+{
+	farZ = inFarZ;
+}
 
 void Camera::setPosition(float inX, float inY, float inZ)
 {
@@ -55,4 +83,21 @@ glm::mat4 Camera::getPerspectiveMatrix() const
 		glm::vec4(0.f, 0.f, k, -1.f),
 		glm::vec4(0.f, 0.f, l, 0.f)
 	);
+}
+
+glm::vec3 Camera::clip2world(glm::vec3 clipPos) const
+{
+	const glm::mat4& pv = getPerspectiveMatrix() * getViewMatrix();
+	const glm::mat4& invPv = glm::inverse(pv);
+
+	glm::vec4 pos_world = invPv * glm::vec4(clipPos, 1.f);
+	pos_world /= pos_world.w;
+	
+	return glm::vec3(pos_world);
+}
+
+BoundCheckRet Camera::checkBound(const BoundingBox& bbox)
+{
+	frustum.update(this->getPerspectiveMatrix());
+	return frustum.checkBound(bbox);
 }

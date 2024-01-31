@@ -15,12 +15,14 @@ enum BoundCheckRet
 
 struct Frustum
 {
+	Frustum() = default;
+
 	Frustum(const glm::mat4& perspectiveMat)
 	{
 		update(perspectiveMat);
 	}
 
-	void update(const glm::mat4 perspectiveMat)
+	void update(const glm::mat4& perspectiveMat)
 	{
 		planes[0] = Plane(-(glm::row(perspectiveMat, 3) - glm::row(perspectiveMat, 1)));
 		planes[1] = Plane(-(glm::row(perspectiveMat, 3) + glm::row(perspectiveMat, 1)));

@@ -28,7 +28,7 @@ public:
 
 	}
 	explicit Quaternion(const glm::mat3& inMatrix);
-	explicit Quaternion(const glm::vec3& inVector, const glm::vec3& inUp = glm::vec3(0.f, 1.f, 0.f));
+	explicit Quaternion(const glm::vec3& lookAtVec, const glm::vec3& inUp = glm::vec3(0.f, 1.f, 0.f));
 	Quaternion& accumulate(const Quaternion& inQuaternion);
 
 	Quaternion operator*=(const Quaternion& inQuaternion);

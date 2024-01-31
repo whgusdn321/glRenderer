@@ -59,9 +59,12 @@ Quaternion::Quaternion(const glm::mat3& inMatrix)
 
 }
 
-Quaternion::Quaternion(const glm::vec3& inVector, const glm::vec3& inUp)
+Quaternion::Quaternion(const glm::vec3& lookAtVec, const glm::vec3& inUp)
 {
-	glm::vec3 zAxis = glm::normalize(inVector);
+	/*
+		quaternion : represent rotation(theta, n) of axis's basis vector[[1,0,0], [0,1,0], [0,0,1]] to rotated vector [xAxis, yAxis, zAxix]
+	*/
+	glm::vec3 zAxis = glm::normalize(lookAtVec);
 	glm::vec3 xAxis;
 	glm::vec3 yAxis;
 	if (abs(zAxis.y) >= (1.f - Math::SMALL_NUMBER))
@@ -78,8 +81,8 @@ Quaternion::Quaternion(const glm::vec3& inVector, const glm::vec3& inUp)
 
 Quaternion& Quaternion::accumulate(const Quaternion& inQuaternion)
 {
-	glm::vec3 v1(x, y, z), v2(inQuaternion.x, inQuaternion.y, inQuaternion.z);
-	glm::vec3 v = v2 * w + v1 * inQuaternion.w + glm::cross(v2, v1);
+	const glm::vec3 v1(x, y, z), v2(inQuaternion.x, inQuaternion.y, inQuaternion.z);
+	const glm::vec3 v = v2 * w + v1 * inQuaternion.w + glm::cross(v2, v1);
 	w = w * inQuaternion.w - glm::dot(v1, v2);
 	x = v.x;
 	y = v.y;
@@ -89,8 +92,8 @@ Quaternion& Quaternion::accumulate(const Quaternion& inQuaternion)
 
 Quaternion Quaternion::operator*=(const Quaternion& inQuaternion)
 {
-	glm::vec3 v1(x, y, z), v2(inQuaternion.x, inQuaternion.y, inQuaternion.z);
-	glm::vec3 v = v2 * w + v1 * inQuaternion.w + glm::cross(v1, v2);
+	const glm::vec3 v1(x, y, z), v2(inQuaternion.x, inQuaternion.y, inQuaternion.z);
+	const glm::vec3 v = v2 * w + v1 * inQuaternion.w + glm::cross(v1, v2);
 	w = w * inQuaternion.w - glm::dot(v1, v2);
 	x = v.x;
 	y = v.y;
