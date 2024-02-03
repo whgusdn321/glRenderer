@@ -72,28 +72,28 @@ int main()
         return -1;
     }
 
-    // configure global opengl state
-    glEnable(GL_DEPTH_TEST);
-
-
     RenderHelper renderHelper;
-    ModelLoader modelLoader;
 
-    RenderResources rs(modelLoader, renderHelper);
+    RenderResources model(PhongLight, "rodin");
+    RenderResources hlModel(SingleColor, "rodin");
 
-    camera.setPosition(0.0f, 0.0f, 5.0f);
-    // camera.setPosition(-1.5f, 3.f, 3.f);
+    camera.setPosition(0.0f, 0.0f, 5.0f); // -1.5f, 3.f, 3.f
     camera.setLookAtTargetRotation(glm::vec3(0.0f, 0.f, 0.0f));
 
-    ConfigPanel configPanel(window, width, height, rs);
-    configPanel.setReloadModelFunc([&](const std::string modelName) -> std::shared_ptr<Model> {
-        return rs.modelLoader.loadModel(modelName);
+    ConfigPanel configPanel(window, width, height, model);
+    configPanel.setReloadModelFunc([&](const std::string modelName) -> void {
+        model.setModel(modelName);
         });
 
-    renderHelper.setupStaticUniforms(rs.shaderGL, PhongLight);
+    renderHelper.setupStaticUniforms(model.shaderGL, PhongLight);
 
     float beforeFrameX = lastMouseX;
     float beforeFrameY = lastMouseY;
+
+    // configure global opengl state
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_STENCIL_TEST);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -110,13 +110,24 @@ int main()
 
         // rendering commands 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-        renderHelper.setupVertexGL(rs.modelPtr);
-        renderHelper.setupTextureGL(rs.modelPtr);
-        renderHelper.setupCameraUniform(rs.shaderGL, PhongLight);
-        renderHelper.drawFrame(rs.shaderGL, rs.modelPtr);
-    
+        if (model.highlightBoundary) {
+            glStencilFunc(GL_ALWAYS, 1, 0xFF);
+            glStencilMask(0xFF);
+        }
+
+        renderHelper.setupCameraUniform(model.shaderGL, PhongLight);
+        renderHelper.drawFrame(model.shaderGL, PhongLight, model.modelPtr);
+
+        if (model.highlightBoundary) {
+            glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+            glStencilMask(0x00);
+            renderHelper.setupCameraUniform(hlModel.shaderGL, SingleColor);
+            renderHelper.drawFrame(hlModel.shaderGL, SingleColor, hlModel.modelPtr);
+            glStencilMask(0xFF);
+            glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        }
         configPanel.draw();
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         glfwSwapBuffers(window);

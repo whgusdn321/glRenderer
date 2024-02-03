@@ -78,12 +78,12 @@ public:
 			}
 		}
 		if (ImGui::Combo("##load model", &modelIdx, modelNames.data(), (int)modelNames.size())) {
-			renderResources.modelPtr = reloadModelFunc(modelNames[modelIdx]);
-			renderResources.modelName = modelNames[modelIdx];
+			// renderResources.modelName = modelNames[modelIdx];
+			reloadModelFunc(modelNames[modelIdx]);
 		}
 	}
 
-	void setReloadModelFunc(const std::function<std::shared_ptr<Model>(std::string modelName)> func)
+	void setReloadModelFunc(const std::function<void(std::string modelName)> func)
 	{
 		reloadModelFunc = func;
 	}
@@ -91,6 +91,6 @@ public:
 private:
 	RenderResources& renderResources;
 	int width, height;
-	std::function<std::shared_ptr<Model>(std::string modelName)> reloadModelFunc;
+	std::function<void(std::string modelName)> reloadModelFunc;
 	std::vector<const char*> modelNames = { "school_uniform", "guitar", "rodin", "dog"};
 };

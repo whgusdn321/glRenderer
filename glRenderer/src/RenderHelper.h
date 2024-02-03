@@ -13,73 +13,15 @@
 #include "Trackball.h"
 #include "Frustum.h"
 #include "MathUtil.h"
+#include "RenderResources.h"
 
 extern Camera camera;
 extern Trackball trackball;
-
-enum ShaderType {
-	PhongLight = 0,
-};
 
 class RenderHelper
 {
 public:
 	RenderHelper() = default;
-
-	void setupVertexGL(std::shared_ptr<Model> model)
-	{
-		if (!model->meshes.empty() && !(model->meshes[0].vertexGL))
-		{
-			for (Mesh& mesh : model->meshes)
-			{
-				mesh.vertexGL = std::make_shared<VertexGL>(&mesh.vertices[0], &mesh.indices[0],
-					mesh.vertices.size(), mesh.indices.size(),
-					offsetof(Vertex, normal), offsetof(Vertex, texCoords),
-					sizeof(Vertex));
-			}
-		}
-	}
-
-	void setupTextureGL(std::shared_ptr<Model> model)
-	{
-		if (!model->meshes.empty() && model->meshes[0].textureGLs.empty())
-		{
-			for (Mesh& mesh : model->meshes)
-			{
-				for (std::shared_ptr<Texture> tx : mesh.textures)
-				{
-					if (textureGLCache.find(tx->texPath) == textureGLCache.end())
-					{
-						std::shared_ptr<TextureGL> outTx = std::make_shared<TextureGL>(
-							tx->type, tx->width, tx->height, tx->nrChannels, tx->data
-							);
-						textureGLCache[tx->texPath] = outTx;
-					}
-					mesh.textureGLs.push_back(textureGLCache[tx->texPath]);
-				}
-			}
-		}
-	}
-
-	std::shared_ptr<ShaderGL> setupShaderGL(const ShaderType shaderType)
-	{
-		if (shaderGLCache.find(shaderType) == shaderGLCache.end())
-		{
-			auto shaderPtr = createShaderGL(shaderType);
-			shaderGLCache[shaderType] = shaderPtr;
-		}
-		return shaderGLCache[shaderType];
-	}
-
-	std::shared_ptr<ShaderGL> createShaderGL(const ShaderType shaderType)
-	{
-		auto sdrPaths = getShaderPath(shaderType);
-		std::string vsPath = sdrPaths.first;
-		std::string fsPath = sdrPaths.second;
-		
-		auto shaderPtr = std::make_shared<ShaderGL>(vsPath, fsPath);
-		return shaderPtr;
-	}
 
 	void setupStaticUniforms(
 		std::shared_ptr<ShaderGL> sPtr, const ShaderType sType)
@@ -118,45 +60,71 @@ public:
 
 	void setupCameraUniform(
 		std::shared_ptr<ShaderGL> sPtr, 
-		ShaderType sType
+		ShaderType shdrType
 	)
 	{
-		if (sType == PhongLight)
-		{
+		switch (shdrType) {
+		case SingleColor:
+		case PhongLight:
+		default:
 			sPtr->use();
 			sPtr->setMat4f("projection", camera.getPerspectiveMatrix());
 			sPtr->setVec3f("viewPos", camera.getPosition());
 			sPtr->setMat4f("view", camera.getViewMatrix());
+			break;
 		}
 	}
 
-	void setupMeshUniform(
+	void setupModelUniform(
 		const std::shared_ptr<ShaderGL> sPtr,
-		const glm::mat4& modelMat,
-		const glm::mat4& rotationByMouse
+		ShaderType shdrType,
+		const glm::mat4& modelMat
 	)
 	{
-		sPtr->use();
-		sPtr->setMat4f("model", rotationByMouse * modelMat);
+		switch (shdrType) {
+		case SingleColor:
+			sPtr->use();
+			sPtr->setMat4f("model", modelMat);
+			break;
+		case PhongLight:
+			sPtr->use();
+			sPtr->setMat4f("model", modelMat);
+			break;
+		default:
+			break;
+		}
 	}
 	
 	void drawFrame(
 		std::shared_ptr<ShaderGL> sPtr,
+		ShaderType sType,
 		const std::shared_ptr<Model> mPtr
 	)
 	{
+		sPtr->use();
 		const glm::mat4 viewMat = camera.getViewMatrix();
 
 		for (const Mesh& mesh : mPtr->meshes)
 		{
-			const glm::mat4 modelMat = mPtr->centeredTransform * mesh.transform;
+			glm::mat4 modelMat;
+			
+			if (sType == SingleColor)
+			{
+				glm::mat4 scaleUp = glm::mat4(1.1f);
+				scaleUp[3][3] = 1.f;
+				modelMat = scaleUp * mPtr->centeredTransform * mesh.transform;
+			}
+			else
+			{
+				modelMat = mPtr->centeredTransform * mesh.transform;
+			}
 
 			const BoundingBox transformedBbox = mesh.aabb.transform(viewMat * modelMat);
 			if (camera.checkBound(transformedBbox) == BoundCheckRet::Outside)
 				continue;
 
 			setupSamplers(sPtr, mesh);
-			setupMeshUniform(sPtr, modelMat, trackball.getRotationMatrix());
+			setupModelUniform(sPtr, sType, trackball.getRotationMatrix() * modelMat);
 			mesh.vertexGL->bind();
 			glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
 			mesh.vertexGL->unBind();
@@ -185,23 +153,4 @@ public:
 		}
 		glActiveTexture(GL_TEXTURE0);
 	}
-	
-	
-	std::pair<std::string, std::string> getShaderPath(ShaderType shaderType)
-	{
-		std::string vsPath, fsPath;
-		switch (shaderType)
-		{
-			case PhongLight:
-			default:
-				vsPath = "./shaders/phong_light.vs";
-				fsPath = "./shaders/phong_light.fs";
-				break;
-		}
-		return std::make_pair(vsPath, fsPath);
-	}
-
-private:
-	std::map<std::string, std::shared_ptr<TextureGL>> textureGLCache; // key : texture path
-	std::map<ShaderType, std::shared_ptr<ShaderGL>> shaderGLCache; 
 };

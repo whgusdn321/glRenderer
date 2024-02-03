@@ -132,6 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\RenderResources.cpp" />
     <Text Include="shaders\fragment_shader_tex.glsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <FileType>Document</FileType>
@@ -214,6 +215,8 @@
     </None>
     <None Include="shaders\phong_light.fs" />
     <None Include="shaders\phong_light.vs" />
+    <None Include="shaders\singlecolor.fs" />
+    <None Include="shaders\singlecolor.vs" />
     <None Include="src\3rdParty\imgui\imgui.natstepfilter" />
   </ItemGroup>
   <ItemGroup>

@@ -93,6 +93,9 @@
     <ClCompile Include="src\3rdParty\imgui\imgui_widgets.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="src\RenderResources.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\math\Quaternion.h">
@@ -224,6 +227,8 @@
       <Filter>리소스 파일\shaders</Filter>
     </None>
     <None Include="src\3rdParty\imgui\imgui.natstepfilter" />
+    <None Include="shaders\singlecolor.fs" />
+    <None Include="shaders\singlecolor.vs" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="src\3rdParty\imgui\imgui.natvis" />
