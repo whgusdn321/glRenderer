@@ -11,22 +11,23 @@
 #include "Frustum.h"
 
 enum ShaderType {
-	PhongLight = 0,
-	SingleColor,
+	PhongLightShdr = 0,
+	SingleColorShdr,
+	SkyBoxShdr,
 };
 
 struct RenderResources 
 {
-    RenderResources(ShaderType shdrType, std::string modelName = "rodin")
+    RenderResources(ShaderType shdrType, ModelType modelType, std::string modelName = "rodin")
     {
-		setModel(modelName);
+		setModel(modelType, modelName);
 		setShader(shdrType);
     }
 	
-	void setModel(std::string modelName)
+	void setModel(ModelType modelType, std::string modelName)
 	{
 		this->modelName = modelName;
-		modelPtr = modelLoader.loadModel(modelName);
+		modelPtr = modelLoader.loadModel(modelType, modelName);
 		setupVertexGL(modelPtr);
 		setupTextureGL(modelPtr);
 	}
@@ -43,7 +44,7 @@ struct RenderResources
 		{
 			for (Mesh& mesh : model->meshes)
 			{
-				mesh.vertexGL = std::make_shared<VertexGL>(&mesh.vertices[0], &mesh.indices[0],
+				mesh.vertexGL = std::make_shared<VertexGL>(mesh.vertices.data(), mesh.indices.data(),
 					mesh.vertices.size(), mesh.indices.size(),
 					offsetof(Vertex, normal), offsetof(Vertex, texCoords),
 					sizeof(Vertex));
@@ -61,7 +62,7 @@ struct RenderResources
 				{
 					if (textureGLCache.find(tx->texPath) == textureGLCache.end())
 					{
-						std::shared_ptr<TextureGL> outTx = std::make_shared<TextureGL>(
+						std::shared_ptr<TextureGL> outTx = std::make_shared<TextureGL2D>(
 							tx->type, tx->width, tx->height, tx->nrChannels, tx->data
 							);
 						textureGLCache[tx->texPath] = outTx;
@@ -97,11 +98,15 @@ struct RenderResources
 		std::string vsPath, fsPath;
 		switch (shaderType)
 		{
-		case SingleColor:
+		case SkyBoxShdr:
+			vsPath = "./shaders/skybox.vs";
+			fsPath = "./shaders/skybox.fs";
+			break;
+		case SingleColorShdr:
 			vsPath = "./shaders/singlecolor.vs";
 			fsPath = "./shaders/singlecolor.fs";
 			break;
-		case PhongLight:
+		case PhongLightShdr:
 		default:
 			vsPath = "./shaders/phong_light.vs";
 			fsPath = "./shaders/phong_light.fs";
@@ -112,9 +117,6 @@ struct RenderResources
 
     
 public:
-    static bool frustumCulling;
-    static bool highlightBoundary;
-
     // model
     std::shared_ptr<Model> modelPtr;
     std::string modelName;
@@ -122,8 +124,6 @@ public:
     //shader
     ShaderType shaderType;
     std::shared_ptr<ShaderGL> shaderGL;
-
-
 
 private:
     static ModelLoader modelLoader;

@@ -27,7 +27,7 @@ public:
 		std::shared_ptr<ShaderGL> sPtr, const ShaderType sType)
 	{
 		sPtr->use();
-		if (sType == PhongLight)
+		if (sType == PhongLightShdr)
 		{
 			sPtr->setFloat("material.shiniess", 32.0f);
 
@@ -64,8 +64,13 @@ public:
 	)
 	{
 		switch (shdrType) {
-		case SingleColor:
-		case PhongLight:
+		case SkyBoxShdr:
+			sPtr->use();
+			sPtr->setMat4f("projection", camera.getPerspectiveMatrix());
+			sPtr->setMat4f("view", glm::mat4(glm::mat3(camera.getViewMatrix())));
+			break;
+		case SingleColorShdr:
+		case PhongLightShdr:
 		default:
 			sPtr->use();
 			sPtr->setMat4f("projection", camera.getPerspectiveMatrix());
@@ -82,11 +87,11 @@ public:
 	)
 	{
 		switch (shdrType) {
-		case SingleColor:
+		case SingleColorShdr:
 			sPtr->use();
 			sPtr->setMat4f("model", modelMat);
 			break;
-		case PhongLight:
+		case PhongLightShdr:
 			sPtr->use();
 			sPtr->setMat4f("model", modelMat);
 			break;
@@ -94,44 +99,8 @@ public:
 			break;
 		}
 	}
-	
-	void drawFrame(
-		std::shared_ptr<ShaderGL> sPtr,
-		ShaderType sType,
-		const std::shared_ptr<Model> mPtr
-	)
-	{
-		sPtr->use();
-		const glm::mat4 viewMat = camera.getViewMatrix();
 
-		for (const Mesh& mesh : mPtr->meshes)
-		{
-			glm::mat4 modelMat;
-			
-			if (sType == SingleColor)
-			{
-				glm::mat4 scaleUp = glm::mat4(1.1f);
-				scaleUp[3][3] = 1.f;
-				modelMat = scaleUp * mPtr->centeredTransform * mesh.transform;
-			}
-			else
-			{
-				modelMat = mPtr->centeredTransform * mesh.transform;
-			}
-
-			const BoundingBox transformedBbox = mesh.aabb.transform(viewMat * modelMat);
-			if (camera.checkBound(transformedBbox) == BoundCheckRet::Outside)
-				continue;
-
-			setupSamplers(sPtr, mesh);
-			setupModelUniform(sPtr, sType, trackball.getRotationMatrix() * modelMat);
-			mesh.vertexGL->bind();
-			glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
-			mesh.vertexGL->unBind();
-		}
-	}
-
-	void setupSamplers(std::shared_ptr<ShaderGL> sPtr, const Mesh& mesh)
+	void setupPhongLightSampler(std::shared_ptr<ShaderGL> sPtr, const Mesh& mesh)
 	{
 		unsigned int diffuseNr = 1;
 		unsigned int specularNr = 1;
@@ -153,4 +122,83 @@ public:
 		}
 		glActiveTexture(GL_TEXTURE0);
 	}
+
+	void setupSkyboxSampler(std::shared_ptr<ShaderGL> sPtr, const Mesh& mesh)
+	{
+		glActiveTexture(GL_TEXTURE0);
+		auto texGLPtr = mesh.textureGLs[0];
+		sPtr->setInt("skybox", 0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, texGLPtr->getID());
+	}
+
+	void setupSamplers(std::shared_ptr<ShaderGL> sPtr, ShaderType shdrType, const Mesh& mesh)
+	{
+		switch (shdrType) {
+		case SkyBoxShdr:
+			setupSkyboxSampler(sPtr, mesh);
+			break;
+		case SingleColorShdr:
+		case PhongLightShdr:
+			setupPhongLightSampler(sPtr, mesh);
+		default:
+			break;
+		}
+	}
+
+	void drawObject(
+		std::shared_ptr<ShaderGL> sPtr,
+		ShaderType sType,
+		const std::shared_ptr<Model> mPtr
+	)
+	{
+		sPtr->use();
+		const glm::mat4 viewMat = camera.getViewMatrix();
+
+		for (const Mesh& mesh : mPtr->meshes)
+		{
+			glm::mat4 modelMat;
+			
+			if (sType == SingleColorShdr)
+			{
+				glm::mat4 scaleUp = glm::mat4(1.1f);
+				scaleUp[3][3] = 1.f;
+				modelMat = scaleUp * mPtr->centeredTransform * mesh.transform;
+			}
+			else
+			{
+				modelMat = mPtr->centeredTransform * mesh.transform;
+			}
+
+			const BoundingBox transformedBbox = mesh.aabb.transform(viewMat * modelMat);
+			if (camera.checkBound(transformedBbox) == BoundCheckRet::Outside)
+				continue;
+
+			setupSamplers(sPtr, sType, mesh);
+			setupModelUniform(sPtr, sType, trackball.getRotationMatrix() * modelMat);
+			mesh.vertexGL->bind();
+			glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+			mesh.vertexGL->unBind();
+		}
+	}
+
+	void drawSkybox(
+		std::shared_ptr<ShaderGL> sPtr,
+		ShaderType sType,
+		const std::shared_ptr<Model> mPtr
+	)
+	{
+		glDepthFunc(GL_LEQUAL);
+		sPtr->use();
+		const glm::mat4 viewMat = glm::mat4(glm::mat3(camera.getViewMatrix()));
+
+		for (const Mesh& mesh : mPtr->meshes)
+		{
+			setupSamplers(sPtr, sType, mesh);
+			mesh.vertexGL->bind();
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			mesh.vertexGL->unBind();
+		}
+		glDepthFunc(GL_LESS);
+	}
+
 };

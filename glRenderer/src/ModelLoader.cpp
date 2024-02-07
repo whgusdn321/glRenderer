@@ -8,34 +8,135 @@
 #include "VertexGL.h"
 #include "TextureGL.h"
 
-std::shared_ptr<Model> ModelLoader::loadModel(std::string modelName)
+std::shared_ptr<Model> ModelLoader::loadModel(ModelType modelType, std::string modelName)
 {
     if (modelCache.find(modelName) != modelCache.end())
     {
 		return modelCache[modelName];
     }
+    
+    std::shared_ptr<Model> model;
+    if (modelType == Object)
+    {
+        model = loadObjectModel(modelName);
+    }
+    else if (modelType == Skybox)
+    {
+        model = loadSkyboxModel(modelName);
+    }
 
+    modelCache[modelName] = model;
+    return model;
+}
+
+std::shared_ptr<Model> ModelLoader::loadObjectModel(std::string modelName)
+{
     std::shared_ptr<Model> model = std::make_shared<Model>();
     model->directory = "./model/" + modelName + '/';
     model->path = model->directory + modelName + ".obj";
     this->directory = model->directory;
 
-	Assimp::Importer importer;
+    Assimp::Importer importer;
 
-	//todo: modelName -> path + modelname
-	const aiScene* scene = importer.ReadFile(model->path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes | aiProcess_GenNormals);
+    //todo: modelName -> path + modelname
+    const aiScene* scene = importer.ReadFile(model->path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes | aiProcess_GenNormals);
 
-	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
-	{
-		std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
-		return model;
-	}
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+    {
+        std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
+        return model;
+    }
 
-	glm::mat4 curTransform = glm::mat4(1.f);
-	processNode(model, scene->mRootNode, scene, curTransform);
+    glm::mat4 curTransform = glm::mat4(1.f);
+    processNode(model, scene->mRootNode, scene, curTransform);
 
-	model->centeredTransform = adjustModelCenter(model->rootAABB);
-    modelCache[modelName] = model;
+    model->centeredTransform = adjustModelCenter(model->rootAABB);
+    return model;
+}
+
+std::shared_ptr<Model> ModelLoader::loadSkyboxModel(std::string modelName)
+{
+    std::shared_ptr<Model> model = std::make_shared<Model>();
+    model->primitiveCnt = 12;
+    model->vertexCnt = 36;
+
+    Mesh mesh;
+    mesh.meshPrimitiveCnt = 12;
+
+    auto dir = "./model_skybox/" + modelName + '/';
+    model->directory = dir;
+    this->directory = dir;
+
+    // set mesh's texture
+    const std::string filePaths[6] = {dir + "right.jpg", dir + "left.jpg", dir + "top.jpg", dir + "bottom.jpg", dir + "front.jpg", dir + "back.jpg"};
+
+    std::shared_ptr<Texture> loadedTextures[6];
+    int i = 0;
+    for (const auto& filepath : filePaths)
+    {
+        loadedTextures[i++] = textureFromFile(filepath);
+    }
+    std::shared_ptr<TextureGL> textureGL = std::make_shared<TextureGLCubemap>(loadedTextures);
+    mesh.textureGLs.push_back(textureGL);
+
+    // set mesh's vertex
+    float skyboxVertices[] = {
+        // positions          
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f
+    };
+
+    for (int i = 0; i < 12; ++i) // # triangle
+    {
+        for (int j = 0; j < 3; ++j) // # vert
+        {
+            Vertex v;
+            v.position.x = skyboxVertices[i*9 + j*3 + 0];
+            v.position.y = skyboxVertices[i*9 + j*3 + 1];
+            v.position.z = skyboxVertices[i*9 + j*3 + 2];
+            mesh.vertices.push_back(v);
+        }
+    }
+    model->meshes.push_back(mesh);
     return model;
 }
 

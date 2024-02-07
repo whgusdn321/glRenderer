@@ -1,9 +1,6 @@
 #pragma once
 
 #include <glad/glad.h>
-//#include "Model.h"
-
-//struct Vertex;
 
 class VertexGL
 {
@@ -13,25 +10,32 @@ public:
                         unsigned int indexCnt, std::size_t normalOffset, std::size_t texOffset, std::size_t vertexStructSize)
 	{
         glGenVertexArrays(1, &vaoID);
-        glGenBuffers(1, &vboID);
-        glGenBuffers(1, &eboID);
 
         glBindVertexArray(vaoID);
-        glBindBuffer(GL_ARRAY_BUFFER, vboID);
-        glBufferData(GL_ARRAY_BUFFER, vertexCnt * vertexStructSize, vertices, GL_STATIC_DRAW);
+        if (vertices)
+        {
+            glGenBuffers(1, &vboID);
+            glBindBuffer(GL_ARRAY_BUFFER, vboID);
+            glBufferData(GL_ARRAY_BUFFER, vertexCnt * vertexStructSize, vertices, GL_STATIC_DRAW);
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCnt * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexStructSize, (void*)0);
 
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexStructSize, (void*)0);
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexStructSize, (void*)normalOffset);
 
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexStructSize, (void*)normalOffset);
+            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexStructSize, (void*)texOffset);
+        }
 
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexStructSize, (void*)texOffset);
-	}
+        if (indices)
+        {
+            glGenBuffers(1, &eboID);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCnt * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+        }
+
+    }
 
     ~VertexGL()
     {

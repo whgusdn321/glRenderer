@@ -22,6 +22,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
+void enableStencilHl();
+void disableStencilHl();
+void initConfigPanel(ConfigPanel&, Config&, RenderResources&, RenderResources&, RenderResources&);
 
 //viewport
 int width = 800;
@@ -74,26 +77,35 @@ int main()
 
     RenderHelper renderHelper;
 
-    RenderResources model(PhongLight, "rodin");
-    RenderResources hlModel(SingleColor, "rodin");
+    RenderResources model(PhongLightShdr, Object, "rodin");
+    RenderResources hlModel(SingleColorShdr, Object, "rodin");
+    RenderResources skyboxModel(SkyBoxShdr, Skybox, "sky");
 
     camera.setPosition(0.0f, 0.0f, 5.0f); // -1.5f, 3.f, 3.f
     camera.setLookAtTargetRotation(glm::vec3(0.0f, 0.f, 0.0f));
 
-    ConfigPanel configPanel(window, width, height, model);
-    configPanel.setReloadModelFunc([&](const std::string modelName) -> void {
-        model.setModel(modelName);
-        });
+    Config config;
+    ConfigPanel configPanel(window, config);
+    initConfigPanel(configPanel, config, model, hlModel, skyboxModel);
 
-    renderHelper.setupStaticUniforms(model.shaderGL, PhongLight);
+    renderHelper.setupStaticUniforms(model.shaderGL, PhongLightShdr);
+    renderHelper.setupStaticUniforms(hlModel.shaderGL, SingleColorShdr);
+    renderHelper.setupStaticUniforms(skyboxModel.shaderGL, SkyBoxShdr);
 
     float beforeFrameX = lastMouseX;
     float beforeFrameY = lastMouseY;
 
     // configure global opengl state
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_STENCIL_TEST);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+    /*
+    if (config.highlightBoundary) {
+        glEnable(GL_STENCIL_TEST);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilMask(0xFF);
+    }
+    */
 
     while (!glfwWindowShouldClose(window))
     {
@@ -112,22 +124,23 @@ int main()
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-        if (model.highlightBoundary) {
-            glStencilFunc(GL_ALWAYS, 1, 0xFF);
-            glStencilMask(0xFF);
-        }
+        renderHelper.setupCameraUniform(model.shaderGL, PhongLightShdr);
+        renderHelper.drawObject(model.shaderGL, PhongLightShdr, model.modelPtr);
 
-        renderHelper.setupCameraUniform(model.shaderGL, PhongLight);
-        renderHelper.drawFrame(model.shaderGL, PhongLight, model.modelPtr);
-
-        if (model.highlightBoundary) {
+        if (config.highlightBoundary) {
             glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
             glStencilMask(0x00);
-            renderHelper.setupCameraUniform(hlModel.shaderGL, SingleColor);
-            renderHelper.drawFrame(hlModel.shaderGL, SingleColor, hlModel.modelPtr);
+            renderHelper.setupCameraUniform(hlModel.shaderGL, SingleColorShdr);
+            renderHelper.drawObject(hlModel.shaderGL, SingleColorShdr, hlModel.modelPtr);
             glStencilMask(0xFF);
             glStencilFunc(GL_ALWAYS, 1, 0xFF);
         }
+
+        if (config.loadSkybox) {
+            renderHelper.setupCameraUniform(skyboxModel.shaderGL, SkyBoxShdr);
+            renderHelper.drawSkybox(skyboxModel.shaderGL, SkyBoxShdr, skyboxModel.modelPtr);
+        }
+
         configPanel.draw();
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         glfwSwapBuffers(window);
@@ -218,4 +231,37 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     {
         camera.accumulateFOV( scrollOffset);
     }
+}
+
+void enableStencilHl()
+{
+   glEnable(GL_STENCIL_TEST);
+   glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+   glStencilFunc(GL_ALWAYS, 1, 0xFF);
+   glStencilMask(0xFF);
+}
+
+void disableStencilHl()
+{
+   glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+   glStencilFunc(GL_ALWAYS, 1, 0x00);
+   glStencilMask(0x00);
+   glDisable(GL_STENCIL_TEST);
+}
+
+void initConfigPanel(ConfigPanel& configPanel, Config& config, RenderResources& model, RenderResources& hlModel, RenderResources& skyboxModel)
+{
+    configPanel.setReloadModelFunc([&](const std::string modelName) -> void {
+        config.modelName = modelName;
+        model.setModel(Object, modelName);
+        hlModel.setModel(Object, modelName);
+        config.primitiveCnt = model.modelPtr->primitiveCnt;
+        });
+    configPanel.setReloadSkyboxModelFunc([&](const std::string modelName) -> void {
+        config.skyboxName = modelName;
+        skyboxModel.setModel(Skybox, modelName);
+        });
+    configPanel.setEnableStencilFunc(enableStencilHl);
+    configPanel.setDisableStencilFunc(disableStencilHl);
+    config.primitiveCnt = model.modelPtr->primitiveCnt;
 }

@@ -7,15 +7,18 @@
 
 #include "RenderResources.h"
 #include "Model.h"
+#include "Config.h"
 #include "3rdParty/imgui/imgui.h"
 #include "3rdParty/imgui/imgui_impl_glfw.h"
 #include "3rdParty/imgui/imgui_impl_opengl3.h"
 
+extern int width, height;
+
 class ConfigPanel
 {
 public:
-	explicit ConfigPanel(void* window, int width, int height, RenderResources& resource) 
-		: renderResources(resource), width(width), height(height)
+	explicit ConfigPanel(void* window, Config& conf) 
+		: config(conf)
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -65,7 +68,7 @@ public:
 		// fps
 		ImGui::Separator();
 		ImGui::Text("fps: %.1f (%.2f ms/frame)", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
-		ImGui::Text("triangles: %zu", renderResources.modelPtr->primitiveCnt);
+		ImGui::Text("triangles: %zu", config.primitiveCnt);
 
 		// model
 		ImGui::Separator();
@@ -73,13 +76,39 @@ public:
 
 		int modelIdx = 0;
 		for (; modelIdx < modelNames.size(); modelIdx++) {
-			if (renderResources.modelName == modelNames[modelIdx]) {
+			if (config.modelName == modelNames[modelIdx]) {
 				break;
 			}
 		}
 		if (ImGui::Combo("##load model", &modelIdx, modelNames.data(), (int)modelNames.size())) {
-			// renderResources.modelName = modelNames[modelIdx];
 			reloadModelFunc(modelNames[modelIdx]);
+		}
+
+		ImGui::Separator();
+		ImGui::Checkbox("load skybox", &(config.loadSkybox));
+
+		if (config.loadSkybox)
+		{
+			int skyboxIdx = 0;
+			for (; skyboxIdx < skyboxNames.size(); skyboxIdx++) {
+				if (config.skyboxName == skyboxNames[skyboxIdx]) {
+					break;
+				}
+			}
+			if (ImGui::Combo("##skybox", &skyboxIdx, skyboxNames.data(), (int)skyboxNames.size())) {
+				reloadSkyboxModelFunc(skyboxNames[skyboxIdx]);
+			}
+		}
+
+		ImGui::Separator();
+		ImGui::Checkbox("highlight model", &(config.highlightBoundary));
+		if (config.highlightBoundary)
+		{
+			enableStencilFunc();
+		}
+		else
+		{
+			disableStencilFunc();
 		}
 	}
 
@@ -88,9 +117,27 @@ public:
 		reloadModelFunc = func;
 	}
 
+	void setReloadSkyboxModelFunc(const std::function<void(std::string modelName)> func)
+	{
+		reloadSkyboxModelFunc = func;
+	}
+
+	void setEnableStencilFunc(const std::function<void()> func)
+	{
+		enableStencilFunc = func;
+	}
+
+	void setDisableStencilFunc(const std::function<void()> func)
+	{
+		disableStencilFunc = func;
+	}
 private:
-	RenderResources& renderResources;
-	int width, height;
+	Config& config;
 	std::function<void(std::string modelName)> reloadModelFunc;
+	std::function<void(std::string modelName)> reloadSkyboxModelFunc;
+	std::function<void()> enableStencilFunc;
+	std::function<void()> disableStencilFunc;
+
 	std::vector<const char*> modelNames = { "school_uniform", "guitar", "rodin", "dog"};
+	std::vector<const char*> skyboxNames = { "sky", "skyhsky" };
 };

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -173,6 +173,7 @@
     <ClInclude Include="src\3rdParty\imgui\imstb_rectpack.h" />
     <ClInclude Include="src\3rdParty\imgui\imstb_textedit.h" />
     <ClInclude Include="src\3rdParty\imgui\imstb_truetype.h" />
+    <ClInclude Include="src\Config.h" />
     <ClInclude Include="src\math\Frustum.h" />
     <ClInclude Include="src\math\Plane.h" />
     <ClInclude Include="src\RenderResources.h" />
@@ -217,6 +218,8 @@
     <None Include="shaders\phong_light.vs" />
     <None Include="shaders\singlecolor.fs" />
     <None Include="shaders\singlecolor.vs" />
+    <None Include="shaders\skybox.fs" />
+    <None Include="shaders\skybox.vs" />
     <None Include="src\3rdParty\imgui\imgui.natstepfilter" />
   </ItemGroup>
   <ItemGroup>

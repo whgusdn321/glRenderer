@@ -4,11 +4,17 @@
 #include <map>
 #include <glm/glm.hpp>
 #include <stb_image.h>
+#include <memory>
 
 #include "BoundingBox.h"
 #include "VertexGL.h"
-#include "TextureGL.h"
 
+class TextureGL;
+
+enum ModelType {
+    Object,
+    Skybox,
+};
 struct Vertex {
     glm::vec3 position;
     glm::vec3 normal;

@@ -16,7 +16,7 @@
 class ModelLoader
 {
 public:
-    std::shared_ptr<Model> loadModel(std::string modelName);
+    std::shared_ptr<Model> loadModel(ModelType modelType, std::string modelName);
 
 private:
     std::string directory;
@@ -24,6 +24,8 @@ private:
     std::map<std::string, std::shared_ptr<Texture>> textureCache; // key: texture path (ex:./model/guitar/normal.png )
 
 private:
+    std::shared_ptr<Model> loadObjectModel(std::string modelName);
+    std::shared_ptr<Model> loadSkyboxModel(std::string modelName);
     void processNode(std::shared_ptr<Model> model, aiNode* aiNode, const aiScene* aiScene, glm::mat4& transform);
     Mesh processMesh(aiMesh* aiMesh, const aiScene* aiScene);
 

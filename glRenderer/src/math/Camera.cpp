@@ -16,6 +16,7 @@ void Camera::rotateByPixels(float dy, float dx)
 	Quaternion q(yawRollPitch);
 	glm::vec3 nCameraPos = q * getPosition();
 	setPosition(nCameraPos.x, nCameraPos.y, nCameraPos.z);
+	setLookAtTargetRotation(glm::vec3(0.f, 0.f, 0.f));
 }
 
 void Camera::setNear(float inNearZ)

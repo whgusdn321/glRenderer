@@ -182,6 +182,9 @@
     <ClInclude Include="src\math\Frustum.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="src\Config.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="shaders\vertex_shader_tex.glsl">
@@ -229,6 +232,8 @@
     <None Include="src\3rdParty\imgui\imgui.natstepfilter" />
     <None Include="shaders\singlecolor.fs" />
     <None Include="shaders\singlecolor.vs" />
+    <None Include="shaders\skybox.fs" />
+    <None Include="shaders\skybox.vs" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="src\3rdParty\imgui\imgui.natvis" />
