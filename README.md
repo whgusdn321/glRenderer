@@ -1,6 +1,6 @@
 # GLRenderer
 GLRenderer is my personal renderer project made with C++, OpenGL3, GLFW.
-GUI is made with ImGUI. I tried to make this project to have simple, reusable structure.
+GUI is made with ImGUI. I designed this project to have a simple and reusable code structure.
 
 # Features(Implemented):
 - Multiple model loading
