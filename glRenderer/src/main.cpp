@@ -98,15 +98,6 @@ int main()
     // configure global opengl state
     glEnable(GL_DEPTH_TEST);
 
-    /*
-    if (config.highlightBoundary) {
-        glEnable(GL_STENCIL_TEST);
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-        glStencilFunc(GL_ALWAYS, 1, 0xFF);
-        glStencilMask(0xFF);
-    }
-    */
-
     while (!glfwWindowShouldClose(window))
     {
         float currentFrame = static_cast<float>(glfwGetTime());
