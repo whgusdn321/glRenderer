@@ -1,15 +1,16 @@
 # GLRenderer
-Made with OpenGL3, GLFW
+GLRenderer is my personal renderer project made with C++, OpenGL3, GLFW.
+GUI is made with ImGUI. I tried to make this project to have simple, reusable structure.
 
-# Features:
+# Features(Implemented):
 - Multiple model loading
 - Skybox
 - Highlight Model
 - Phong Light Shader
-- Trackball
+- Trackball(Arcball)
 - Bounding Box culling
 - Automatic Model Position Conversion
-  
+
 # Captured Image
 ## rodin
 ![glRenderer_XSt9Rf5ATl](https://github.com/whgusdn321/glRenderer/assets/43023361/b059e69a-3d2f-4b03-b14d-c14a05b73b08)
