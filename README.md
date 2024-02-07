@@ -3,6 +3,8 @@ Made with OpenGL3, GLFW
 
 # Features:
 - Multiple model loading
+- Skybox
+- Highlight Model
 - Phong Light Shader
 - Trackball
 - Bounding Box culling
@@ -24,3 +26,4 @@ Made with OpenGL3, GLFW
 ![glRenderer_D8C3uK1Ok1](https://github.com/whgusdn321/glRenderer/assets/43023361/4de2463b-97be-414f-98c7-148ebb56a055)
 
 # Captured GIF
+![gif9mb](https://github.com/whgusdn321/glRenderer/assets/43023361/b83d83f3-e4c5-4b2d-94ff-8f350d892466)
