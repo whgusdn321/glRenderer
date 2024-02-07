@@ -6,13 +6,18 @@ Made with OpenGL3, GLFW
 - Phong Light Shader
 - Trackball
 - Bounding Box culling
-- automative model position
+- Automatic Model Position Conversion
   
-# Capture Image(GIF)
-![glRenderer_dirLightGIF](https://github.com/whgusdn321/glRenderer/assets/43023361/021f00cd-2604-4e52-a921-d617c3388771)
+# Captured Image(GIF)
+![glRenderer_gif1 31](https://github.com/whgusdn321/glRenderer/assets/43023361/5018f357-6dc0-4375-bac2-72e7f49d4863)
 
-# Capture Image
-###### guitar model
-![guitar](https://github.com/whgusdn321/glRenderer/assets/43023361/8b0639c3-9fb7-4632-9b09-7ae8dedbf041)
+
+# Captured Image
+###### rodin
+![glRenderer_rodin1 31](https://github.com/whgusdn321/glRenderer/assets/43023361/9a3954d0-4ab8-45b6-a8a5-d49806016b6c)
+
+##### dog
+![glRenderer_dog1 31](https://github.com/whgusdn321/glRenderer/assets/43023361/2e70f5b0-8c4b-429e-b068-0f05beb14ef7)
+
 ###### scool uniform model
-![school_uniform](https://github.com/whgusdn321/glRenderer/assets/43023361/562d1ea1-df86-4990-9085-0b513f15d118)
+![glRenderer_schooluni1 31](https://github.com/whgusdn321/glRenderer/assets/43023361/7e274f3b-5a0a-422b-831f-91575383c080)
