@@ -78,6 +78,7 @@ int main()
     RenderHelper renderHelper;
 
     RenderResources model(PhongLightShdr, Object, "rodin");
+    RenderResources floorModel(PhongLightShdr, Floor, "floor");
     RenderResources hlModel(SingleColorShdr, Object, "rodin");
     RenderResources skyboxModel(SkyBoxShdr, Skybox, "sky");
 
@@ -89,6 +90,7 @@ int main()
     initConfigPanel(configPanel, config, model, hlModel, skyboxModel);
 
     renderHelper.setupStaticUniforms(model.shaderGL, PhongLightShdr);
+    renderHelper.setupStaticUniforms(floorModel.shaderGL, PhongLightShdr);
     renderHelper.setupStaticUniforms(hlModel.shaderGL, SingleColorShdr);
     renderHelper.setupStaticUniforms(skyboxModel.shaderGL, SkyBoxShdr);
 
@@ -117,6 +119,7 @@ int main()
 
         renderHelper.setupCameraUniform(model.shaderGL, PhongLightShdr);
         renderHelper.drawObject(model.shaderGL, PhongLightShdr, model.modelPtr);
+        renderHelper.drawFloor(floorModel.shaderGL, PhongLightShdr, floorModel.modelPtr, model.modelPtr->rootAABB);
 
         if (config.highlightBoundary) {
             glStencilFunc(GL_NOTEQUAL, 1, 0xFF);

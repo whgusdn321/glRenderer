@@ -8,7 +8,7 @@
 #include "VertexGL.h"
 #include "TextureGL.h"
 
-std::shared_ptr<Model> ModelLoader::loadModel(ModelType modelType, std::string modelName)
+std::shared_ptr<Model> ModelLoader::loadModel(ModelLoadType modelType, std::string modelName)
 {
     if (modelCache.find(modelName) != modelCache.end())
     {
@@ -17,13 +17,11 @@ std::shared_ptr<Model> ModelLoader::loadModel(ModelType modelType, std::string m
     
     std::shared_ptr<Model> model;
     if (modelType == Object)
-    {
         model = loadObjectModel(modelName);
-    }
     else if (modelType == Skybox)
-    {
         model = loadSkyboxModel(modelName);
-    }
+    else if (modelType == Floor)
+        model = loadFloorModel(modelName);
 
     modelCache[modelName] = model;
     return model;
@@ -51,6 +49,56 @@ std::shared_ptr<Model> ModelLoader::loadObjectModel(std::string modelName)
     processNode(model, scene->mRootNode, scene, curTransform);
 
     model->centeredTransform = adjustModelCenter(model->rootAABB);
+    return model;
+}
+
+std::shared_ptr<Model> ModelLoader::loadFloorModel(std::string modelName)
+{
+    std::shared_ptr<Model> model = std::make_shared<Model>();
+    model->primitiveCnt = 2;
+    model->vertexCnt = 4;
+
+    Mesh mesh;
+    mesh.meshPrimitiveCnt = 2;
+
+    auto dir = "./model_floor/";
+    model->directory = dir;
+    this->directory = dir;
+
+    const std::string filePath = dir + modelName + ".png";
+    std::shared_ptr<Texture> loadedTexture = textureFromFile(filePath);
+    loadedTexture->type = "texture_diffuse";
+    mesh.textures.push_back(std::move(loadedTexture));
+
+    float planeVertices[] = {
+        // positions            // normals         // texcoords
+         1.0f, -0.5f,  1.0f,  0.0f, 1.0f, 0.0f,  1.0f,  0.0f, // 5'o clock
+        -1.0f, -0.5f,  1.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f, // 7
+        -1.0f, -0.5f, -1.0f,  0.0f, 1.0f, 0.0f,   0.0f, 1.0f, // 11
+
+         1.0f, -0.5f,  1.0f,  0.0f, 1.0f, 0.0f,  1.0f,  0.0f, // 5
+        -1.0f, -0.5f, -1.0f,  0.0f, 1.0f, 0.0f,   0.0f, 1.0f, // 11
+         1.0f, -0.5f, -1.0f,  0.0f, 1.0f, 0.0f,  1.0f, 1.0f // 1
+    };
+
+    for (int i = 0; i < 6; ++i)
+    {
+        Vertex v;
+        v.position.x = planeVertices[i * 8];
+        v.position.y = planeVertices[i * 8 + 1];
+        v.position.z = planeVertices[i * 8 + 2];
+        v.normal.x = planeVertices[i * 8 + 3];
+        v.normal.y = planeVertices[i * 8 + 4];
+        v.normal.z = planeVertices[i * 8 + 5];
+        v.texCoords.s = planeVertices[i * 8 + 6];
+        v.texCoords.t = planeVertices[i * 8 + 7];
+        mesh.vertices.push_back(v);
+    }
+    mesh.transform = glm::mat4(1.f);
+    mesh.aabb = BoundingBox(glm::vec3(-1.0f, -0.5f, -1.f), glm::vec3(1.0f, -0.5f, 1.f));
+    model->centeredTransform = glm::mat4(1.f);
+
+    model->meshes.push_back(mesh);
     return model;
 }
 

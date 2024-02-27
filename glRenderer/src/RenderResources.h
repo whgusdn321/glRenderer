@@ -18,13 +18,13 @@ enum ShaderType {
 
 struct RenderResources 
 {
-    RenderResources(ShaderType shdrType, ModelType modelType, std::string modelName = "rodin")
+    RenderResources(ShaderType shdrType, ModelLoadType modelType, std::string modelName = "rodin")
     {
 		setModel(modelType, modelName);
 		setShader(shdrType);
     }
 	
-	void setModel(ModelType modelType, std::string modelName)
+	void setModel(ModelLoadType modelType, std::string modelName)
 	{
 		this->modelName = modelName;
 		modelPtr = modelLoader.loadModel(modelType, modelName);

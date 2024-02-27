@@ -123,12 +123,32 @@ public:
 		glActiveTexture(GL_TEXTURE0);
 	}
 
+	void unsetPhongLightSampler(std::shared_ptr<ShaderGL> sPtr, const Mesh& mesh)
+	{
+		for (unsigned int i = 0; i < mesh.textureGLs.size(); ++i)
+		{
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+		glActiveTexture(GL_TEXTURE0);
+	}
+
 	void setupSkyboxSampler(std::shared_ptr<ShaderGL> sPtr, const Mesh& mesh)
 	{
 		glActiveTexture(GL_TEXTURE0);
 		auto texGLPtr = mesh.textureGLs[0];
 		sPtr->setInt("skybox", 0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, texGLPtr->getID());
+	}
+
+	void unsetSkyboxSampler(std::shared_ptr<ShaderGL> sPtr, const Mesh& mesh)
+	{
+		for (unsigned int i = 0; i < mesh.textureGLs.size(); ++i)
+		{
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+		glActiveTexture(GL_TEXTURE0);
 	}
 
 	void setupSamplers(std::shared_ptr<ShaderGL> sPtr, ShaderType shdrType, const Mesh& mesh)
@@ -143,6 +163,17 @@ public:
 		default:
 			break;
 		}
+	}
+
+	void unsetSamplers(const Mesh& mesh)
+	{
+		for (int i = 0; i < mesh.textureGLs.size(); ++i)
+		{
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+		}
+		glActiveTexture(GL_TEXTURE0);
 	}
 
 	void drawObject(
@@ -178,6 +209,32 @@ public:
 			mesh.vertexGL->bind();
 			glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
 			mesh.vertexGL->unBind();
+			unsetSamplers(mesh);	
+		}
+	}
+
+	void drawFloor(
+		std::shared_ptr<ShaderGL> sPtr,
+		ShaderType sType,
+		const std::shared_ptr<Model> mPtr,
+		const BoundingBox& mdlBbox
+	)
+	{
+		sPtr->use();
+		const glm::mat4 viewMat = camera.getViewMatrix();
+		glm::mat4 modelMat(1.f);
+
+		for (const Mesh& mesh : mPtr->meshes)
+		{
+			float minY = mdlBbox.min.y;
+			modelMat = glm::translate(modelMat, glm::vec3(0.f, minY, 0.f));
+			modelMat = glm::scale(modelMat, glm::vec3(2.f, 2.f, 2.f));
+			setupSamplers(sPtr, sType, mesh);
+			setupModelUniform(sPtr, sType, modelMat);
+			mesh.vertexGL->bind();
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			mesh.vertexGL->unBind();
+			unsetSamplers(mesh);
 		}
 	}
 

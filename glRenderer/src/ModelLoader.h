@@ -13,10 +13,16 @@
 #include "Model.h"
 #include "TextureGL.h"
 
+enum ModelLoadType {
+    Object,
+    Skybox,
+    Floor,
+};
+
 class ModelLoader
 {
 public:
-    std::shared_ptr<Model> loadModel(ModelType modelType, std::string modelName);
+    std::shared_ptr<Model> loadModel(ModelLoadType modelType, std::string modelName);
 
 private:
     std::string directory;
@@ -26,6 +32,7 @@ private:
 private:
     std::shared_ptr<Model> loadObjectModel(std::string modelName);
     std::shared_ptr<Model> loadSkyboxModel(std::string modelName);
+    std::shared_ptr<Model> loadFloorModel(std::string modelName);
     void processNode(std::shared_ptr<Model> model, aiNode* aiNode, const aiScene* aiScene, glm::mat4& transform);
     Mesh processMesh(aiMesh* aiMesh, const aiScene* aiScene);
 
