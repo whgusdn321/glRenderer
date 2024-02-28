@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 
-#include "RenderResources.h"
+#include "ModelWithShader.h"
 #include "Model.h"
 #include "Config.h"
 #include "3rdParty/imgui/imgui.h"

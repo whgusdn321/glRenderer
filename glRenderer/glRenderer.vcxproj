@@ -132,7 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\RenderResources.cpp" />
+    <ClCompile Include="src\ModelWithShader.cpp" />
     <Text Include="shaders\fragment_shader_tex.glsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <FileType>Document</FileType>
@@ -176,7 +176,7 @@
     <ClInclude Include="src\Config.h" />
     <ClInclude Include="src\math\Frustum.h" />
     <ClInclude Include="src\math\Plane.h" />
-    <ClInclude Include="src\RenderResources.h" />
+    <ClInclude Include="src\ModelWithShader.h" />
     <ClInclude Include="src\ConfigPanel.h" />
     <ClInclude Include="src\math\BoundingBox.h" />
     <ClInclude Include="src\math\Camera.h" />

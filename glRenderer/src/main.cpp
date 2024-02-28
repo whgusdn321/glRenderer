@@ -8,7 +8,7 @@
 #include "Camera.h"
 #include "Trackball.h"
 
-#include "RenderResources.h"
+#include "ModelWithShader.h"
 #include "ConfigPanel.h"
 
 #include "Model.h"
@@ -24,11 +24,13 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 void enableStencilHl();
 void disableStencilHl();
-void initConfigPanel(ConfigPanel&, Config&, RenderResources&, RenderResources&, RenderResources&);
+void initConfigPanel(ConfigPanel&, Config&, ModelWithShader&, ModelWithShader&, ModelWithShader&);
 
 //viewport
 int width = 800;
 int height = 600;
+const int shadowWidth = 1024;
+const int shadowHeight = 1024;
 
 Camera camera(60.f, 0.01f, 100.f);
 Trackball trackball(camera);
@@ -77,10 +79,10 @@ int main()
 
     RenderHelper renderHelper;
 
-    RenderResources model(PhongLightShdr, Object, "rodin");
-    RenderResources floorModel(PhongLightShdr, Floor, "floor");
-    RenderResources hlModel(SingleColorShdr, Object, "rodin");
-    RenderResources skyboxModel(SkyBoxShdr, Skybox, "sky");
+    ModelWithShader model(phongLightShdr, Object, "rodin");
+    ModelWithShader floorModel(phongLightShdr, Floor, "floor");
+    ModelWithShader hlModel(singleColorShdr, Object, "rodin");
+    ModelWithShader skyboxModel(skyBoxShdr, Skybox, "sky");
 
     camera.setPosition(0.0f, 0.0f, 5.0f); // -1.5f, 3.f, 3.f
     camera.setLookAtTargetRotation(glm::vec3(0.0f, 0.f, 0.0f));
@@ -89,10 +91,10 @@ int main()
     ConfigPanel configPanel(window, config);
     initConfigPanel(configPanel, config, model, hlModel, skyboxModel);
 
-    renderHelper.setupStaticUniforms(model.shaderGL, PhongLightShdr);
-    renderHelper.setupStaticUniforms(floorModel.shaderGL, PhongLightShdr);
-    renderHelper.setupStaticUniforms(hlModel.shaderGL, SingleColorShdr);
-    renderHelper.setupStaticUniforms(skyboxModel.shaderGL, SkyBoxShdr);
+    renderHelper.setupStaticUniforms(model.shaderGL, phongLightShdr);
+    renderHelper.setupStaticUniforms(floorModel.shaderGL, phongLightShdr);
+    renderHelper.setupStaticUniforms(hlModel.shaderGL, singleColorShdr);
+    renderHelper.setupStaticUniforms(skyboxModel.shaderGL, skyBoxShdr);
 
     float beforeFrameX = lastMouseX;
     float beforeFrameY = lastMouseY;
@@ -117,22 +119,22 @@ int main()
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-        renderHelper.setupCameraUniform(model.shaderGL, PhongLightShdr);
-        renderHelper.drawObject(model.shaderGL, PhongLightShdr, model.modelPtr);
-        renderHelper.drawFloor(floorModel.shaderGL, PhongLightShdr, floorModel.modelPtr, model.modelPtr->rootAABB);
+        renderHelper.setupCameraUniform(model.shaderGL, phongLightShdr);
+        renderHelper.drawObject(model.shaderGL, phongLightShdr, model.modelPtr);
+        renderHelper.drawFloor(floorModel.shaderGL, phongLightShdr, floorModel.modelPtr, model.modelPtr->rootAABB);
 
         if (config.highlightBoundary) {
             glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
             glStencilMask(0x00);
-            renderHelper.setupCameraUniform(hlModel.shaderGL, SingleColorShdr);
-            renderHelper.drawObject(hlModel.shaderGL, SingleColorShdr, hlModel.modelPtr);
+            renderHelper.setupCameraUniform(hlModel.shaderGL, singleColorShdr);
+            renderHelper.drawObject(hlModel.shaderGL, singleColorShdr, hlModel.modelPtr);
             glStencilMask(0xFF);
             glStencilFunc(GL_ALWAYS, 1, 0xFF);
         }
 
         if (config.loadSkybox) {
-            renderHelper.setupCameraUniform(skyboxModel.shaderGL, SkyBoxShdr);
-            renderHelper.drawSkybox(skyboxModel.shaderGL, SkyBoxShdr, skyboxModel.modelPtr);
+            renderHelper.setupCameraUniform(skyboxModel.shaderGL, skyBoxShdr);
+            renderHelper.drawSkybox(skyboxModel.shaderGL, skyBoxShdr, skyboxModel.modelPtr);
         }
 
         configPanel.draw();
@@ -243,7 +245,7 @@ void disableStencilHl()
    glDisable(GL_STENCIL_TEST);
 }
 
-void initConfigPanel(ConfigPanel& configPanel, Config& config, RenderResources& model, RenderResources& hlModel, RenderResources& skyboxModel)
+void initConfigPanel(ConfigPanel& configPanel, Config& config, ModelWithShader& model, ModelWithShader& hlModel, ModelWithShader& skyboxModel)
 {
     configPanel.setReloadModelFunc([&](const std::string modelName) -> void {
         config.modelName = modelName;

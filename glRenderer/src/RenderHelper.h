@@ -13,7 +13,7 @@
 #include "Trackball.h"
 #include "Frustum.h"
 #include "MathUtil.h"
-#include "RenderResources.h"
+#include "ModelWithShader.h"
 
 extern Camera camera;
 extern Trackball trackball;
@@ -27,7 +27,7 @@ public:
 		std::shared_ptr<ShaderGL> sPtr, const ShaderType sType)
 	{
 		sPtr->use();
-		if (sType == PhongLightShdr)
+		if (sType == phongLightShdr)
 		{
 			sPtr->setFloat("material.shiniess", 32.0f);
 
@@ -64,13 +64,13 @@ public:
 	)
 	{
 		switch (shdrType) {
-		case SkyBoxShdr:
+		case skyBoxShdr:
 			sPtr->use();
 			sPtr->setMat4f("projection", camera.getPerspectiveMatrix());
 			sPtr->setMat4f("view", glm::mat4(glm::mat3(camera.getViewMatrix())));
 			break;
-		case SingleColorShdr:
-		case PhongLightShdr:
+		case singleColorShdr:
+		case phongLightShdr:
 		default:
 			sPtr->use();
 			sPtr->setMat4f("projection", camera.getPerspectiveMatrix());
@@ -87,11 +87,11 @@ public:
 	)
 	{
 		switch (shdrType) {
-		case SingleColorShdr:
+		case singleColorShdr:
 			sPtr->use();
 			sPtr->setMat4f("model", modelMat);
 			break;
-		case PhongLightShdr:
+		case phongLightShdr:
 			sPtr->use();
 			sPtr->setMat4f("model", modelMat);
 			break;
@@ -154,11 +154,11 @@ public:
 	void setupSamplers(std::shared_ptr<ShaderGL> sPtr, ShaderType shdrType, const Mesh& mesh)
 	{
 		switch (shdrType) {
-		case SkyBoxShdr:
+		case skyBoxShdr:
 			setupSkyboxSampler(sPtr, mesh);
 			break;
-		case SingleColorShdr:
-		case PhongLightShdr:
+		case singleColorShdr:
+		case phongLightShdr:
 			setupPhongLightSampler(sPtr, mesh);
 		default:
 			break;
@@ -189,7 +189,7 @@ public:
 		{
 			glm::mat4 modelMat;
 			
-			if (sType == SingleColorShdr)
+			if (sType == singleColorShdr)
 			{
 				glm::mat4 scaleUp = glm::mat4(1.1f);
 				scaleUp[3][3] = 1.f;
@@ -257,5 +257,9 @@ public:
 		}
 		glDepthFunc(GL_LESS);
 	}
+
+private:
+	unsigned int depthMapFBO;
+	unsigned int depthMapTXT;
 
 };

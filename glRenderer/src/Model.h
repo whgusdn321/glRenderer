@@ -55,5 +55,4 @@ struct Model
     unsigned int primitiveCnt;
     unsigned int vertexCnt;
     std::string modelName;
-
 };

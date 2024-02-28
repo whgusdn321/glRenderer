@@ -11,14 +11,14 @@
 #include "Frustum.h"
 
 enum ShaderType {
-	PhongLightShdr = 0,
-	SingleColorShdr,
-	SkyBoxShdr,
+	phongLightShdr = 0,
+	singleColorShdr,
+	skyBoxShdr,
 };
 
-struct RenderResources 
+struct ModelWithShader 
 {
-    RenderResources(ShaderType shdrType, ModelLoadType modelType, std::string modelName = "rodin")
+    ModelWithShader(ShaderType shdrType, ModelLoadType modelType, std::string modelName = "rodin")
     {
 		setModel(modelType, modelName);
 		setShader(shdrType);
@@ -63,7 +63,7 @@ struct RenderResources
 					if (textureGLCache.find(tx->texPath) == textureGLCache.end())
 					{
 						std::shared_ptr<TextureGL> outTx = std::make_shared<TextureGL2D>(
-							tx->type, tx->width, tx->height, tx->nrChannels, tx->data
+							tx, TexMagFilter::linear, TexMinFilter::nearest_mipmap_linear, TexWrapS::repeat, TexWrapT::repeat
 							);
 						textureGLCache[tx->texPath] = outTx;
 					}
@@ -98,15 +98,15 @@ struct RenderResources
 		std::string vsPath, fsPath;
 		switch (shaderType)
 		{
-		case SkyBoxShdr:
+		case skyBoxShdr:
 			vsPath = "./shaders/skybox.vs";
 			fsPath = "./shaders/skybox.fs";
 			break;
-		case SingleColorShdr:
+		case singleColorShdr:
 			vsPath = "./shaders/singlecolor.vs";
 			fsPath = "./shaders/singlecolor.fs";
 			break;
-		case PhongLightShdr:
+		case phongLightShdr:
 		default:
 			vsPath = "./shaders/phong_light.vs";
 			fsPath = "./shaders/phong_light.fs";
