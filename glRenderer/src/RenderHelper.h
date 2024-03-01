@@ -4,6 +4,7 @@
 #include <memory>
 #include <map>
 #include <string>
+#include <functional>
 
 #include "Model.h"
 #include "VertexGL.h"
@@ -17,6 +18,10 @@
 
 extern Camera camera;
 extern Trackball trackball;
+extern const int shadowHeight;
+extern const int shadowWidth;
+extern int width;
+extern int height;
 
 class RenderHelper
 {
@@ -27,7 +32,7 @@ public:
 		std::shared_ptr<ShaderGL> sPtr, const ShaderType sType)
 	{
 		sPtr->use();
-		if (sType == phongLightShdr)
+		if (sType == phongLightShdr || sType == phongLightShadowShdr)
 		{
 			sPtr->setFloat("material.shiniess", 32.0f);
 
@@ -54,25 +59,33 @@ public:
 			sPtr->setFloat("flashLight.outerCutOff", glm::cos(glm::radians(17.5f)));
 			sPtr->setVec3f("flashLight.ambient", 0.1f, 0.1f, 0.1f);
 			sPtr->setVec3f("flashLight.flash", 0.3f, 0.3f, 0.3f);
-			
+		}
+		else if (sType == debugQuadShdr)
+		{
+			sPtr->setFloat("near_plane", 1.f);
+			sPtr->setFloat("far_plane", 15.f);
 		}
 	}
 
 	void setupCameraUniform(
-		std::shared_ptr<ShaderGL> sPtr, 
+		std::shared_ptr<ShaderGL> sPtr,
 		ShaderType shdrType
 	)
 	{
+		sPtr->use();
 		switch (shdrType) {
+		case debugQuadShdr:
+			break;
 		case skyBoxShdr:
-			sPtr->use();
 			sPtr->setMat4f("projection", camera.getPerspectiveMatrix());
 			sPtr->setMat4f("view", glm::mat4(glm::mat3(camera.getViewMatrix())));
 			break;
 		case singleColorShdr:
+		case phongLightShadowShdr:
+			sPtr->setMat4f("lightSpaceMatrix", lightSpaceMatrix);
+			sPtr->setVec3f("dirLightPos", lightPos);
 		case phongLightShdr:
 		default:
-			sPtr->use();
 			sPtr->setMat4f("projection", camera.getPerspectiveMatrix());
 			sPtr->setVec3f("viewPos", camera.getPosition());
 			sPtr->setMat4f("view", camera.getViewMatrix());
@@ -87,10 +100,14 @@ public:
 	)
 	{
 		switch (shdrType) {
+		case debugQuadShdr:
+			break;
 		case singleColorShdr:
 			sPtr->use();
 			sPtr->setMat4f("model", modelMat);
 			break;
+		case depthShdr:
+		case phongLightShadowShdr:
 		case phongLightShdr:
 			sPtr->use();
 			sPtr->setMat4f("model", modelMat);
@@ -104,7 +121,8 @@ public:
 	{
 		unsigned int diffuseNr = 1;
 		unsigned int specularNr = 1;
-		for (unsigned int i = 0; i < mesh.textureGLs.size(); ++i)
+		unsigned int i = 0;
+		for (i = 0; i < mesh.textureGLs.size(); ++i)
 		{
 			glActiveTexture(GL_TEXTURE0 + i);
 			auto texGLPtr = mesh.textureGLs[i];
@@ -120,16 +138,18 @@ public:
 
 			glBindTexture(GL_TEXTURE_2D, texGLPtr->getID());
 		}
+		++i;
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, depthMapTXT);
+		sPtr->setInt("depthMap", i);
 		glActiveTexture(GL_TEXTURE0);
 	}
 
-	void unsetPhongLightSampler(std::shared_ptr<ShaderGL> sPtr, const Mesh& mesh)
+	void setupDebugDepthSampler(std::shared_ptr<ShaderGL> sPtr, const Mesh& mesh)
 	{
-		for (unsigned int i = 0; i < mesh.textureGLs.size(); ++i)
-		{
-			glActiveTexture(GL_TEXTURE0 + i);
-			glBindTexture(GL_TEXTURE_2D, 0);
-		}
+		sPtr->setInt("depthMap", 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthMapTXT);
 		glActiveTexture(GL_TEXTURE0);
 	}
 
@@ -158,8 +178,14 @@ public:
 			setupSkyboxSampler(sPtr, mesh);
 			break;
 		case singleColorShdr:
+		case phongLightShadowShdr:
 		case phongLightShdr:
 			setupPhongLightSampler(sPtr, mesh);
+			break;
+		case debugQuadShdr:
+			setupDebugDepthSampler(sPtr, mesh);
+			break;
+		case depthShdr:
 		default:
 			break;
 		}
@@ -176,12 +202,29 @@ public:
 		glActiveTexture(GL_TEXTURE0);
 	}
 
-	void drawObject(
-		std::shared_ptr<ShaderGL> sPtr,
-		ShaderType sType,
-		const std::shared_ptr<Model> mPtr
-	)
+	void setupShadowFBO(const unsigned int width, const unsigned int height)
 	{
+		glGenFramebuffers(1, &depthMapFBO);
+		depthMap = TextureGL2D("depth_texture", width, height, TexFilter::nearest, TexFilter::nearest,
+			TexWrap::clamp_to_border, TexWrap::clamp_to_border); // TextureGL2D()를 호출하는 순간 객체 하나 생기고, depthMap의 객체의 assign operator호출. 그다음, 함수 종료때 destructor 호출. 따라서 texture delete삭제해줘야함..
+		depthMapTXT = depthMap.getID();
+		glBindTexture(GL_TEXTURE_2D, depthMap.getID());
+		float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap.getID(), 0);
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	void drawObject(const ModelWithShader& mdlshdr)
+	{
+		auto sPtr = mdlshdr.shaderGL;
+		auto sType = mdlshdr.shaderType;
+		auto mPtr = mdlshdr.modelPtr;
+
 		sPtr->use();
 		const glm::mat4 viewMat = camera.getViewMatrix();
 
@@ -213,21 +256,20 @@ public:
 		}
 	}
 
-	void drawFloor(
-		std::shared_ptr<ShaderGL> sPtr,
-		ShaderType sType,
-		const std::shared_ptr<Model> mPtr,
-		const BoundingBox& mdlBbox
-	)
+	void drawFloor(const ModelWithShader& mdlshdr)
 	{
+		auto sPtr = mdlshdr.shaderGL;
+		auto sType = mdlshdr.shaderType;
+		auto mPtr = mdlshdr.modelPtr;
+
 		sPtr->use();
 		const glm::mat4 viewMat = camera.getViewMatrix();
 		glm::mat4 modelMat(1.f);
 
 		for (const Mesh& mesh : mPtr->meshes)
 		{
-			float minY = mdlBbox.min.y;
-			modelMat = glm::translate(modelMat, glm::vec3(0.f, minY, 0.f));
+			// float minY = mdlBbox.min.y;
+			modelMat = glm::translate(modelMat, glm::vec3(0.f, -0.8f, 0.f));
 			modelMat = glm::scale(modelMat, glm::vec3(2.f, 2.f, 2.f));
 			setupSamplers(sPtr, sType, mesh);
 			setupModelUniform(sPtr, sType, modelMat);
@@ -258,8 +300,58 @@ public:
 		glDepthFunc(GL_LESS);
 	}
 
+	void drawShadowMap(const ModelWithShader& mdlshdr)
+	{
+		lightPos = glm::vec3(1.5f, 5.f, 1.5f);
+		// lightPos = glm::vec3(-1.f, 5.f, 0.f);
+		lightProjection = glm::ortho(-10.f, 10.f, -10.f, 10.f, 1.f, 10.5f);
+		lightView = glm::lookAt(lightPos, glm::vec3(0.f), glm::vec3(0.f, 1.f, 0.f));
+		lightSpaceMatrix = lightProjection * lightView;
+		mdlshdr.shaderGL->use();
+		mdlshdr.shaderGL->setMat4f("lightSpaceMatrix", lightSpaceMatrix);
+
+		//glViewport(0, 0, shadowWidth, shadowHeight);
+		//glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		//glClear(GL_DEPTH_BUFFER_BIT);
+
+		if (mdlshdr.modelName == "floor")
+			drawFloor(mdlshdr);
+		else
+			drawObject(mdlshdr);
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//glViewport(0, 0, width, height);
+	}
+
+	void drawDebugQuad(const ModelWithShader& mdlshdr)
+	{
+		auto sPtr = mdlshdr.shaderGL;
+		auto sType = mdlshdr.shaderType;
+		auto mPtr = mdlshdr.modelPtr;
+
+		sPtr->use();
+
+		for (const Mesh& mesh : mPtr->meshes)
+		{
+			setupSamplers(sPtr, sType, mesh);
+			mesh.vertexGL->bind();
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			mesh.vertexGL->unBind();
+			unsetSamplers(mesh);
+		}
+	}
+
+	unsigned int getDepthMapFBO()
+	{
+		return depthMapFBO;
+	}
+
 private:
 	unsigned int depthMapFBO;
 	unsigned int depthMapTXT;
+	TextureGL2D depthMap;
+	glm::vec3 lightPos;
+	glm::mat4 lightProjection;
+	glm::mat4 lightView;
+	glm::mat4 lightSpaceMatrix;
 
 };

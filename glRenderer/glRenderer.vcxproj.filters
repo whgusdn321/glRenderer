@@ -234,6 +234,12 @@
     <None Include="shaders\singlecolor.vs" />
     <None Include="shaders\skybox.fs" />
     <None Include="shaders\skybox.vs" />
+    <None Include="shaders\depth.vs" />
+    <None Include="shaders\depth.fs" />
+    <None Include="shaders\phong_light_shadow.vs" />
+    <None Include="shaders\phong_light_shadow.fs" />
+    <None Include="shaders\debug_quad.vs" />
+    <None Include="shaders\debug_quad.fs" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="src\3rdParty\imgui\imgui.natvis" />

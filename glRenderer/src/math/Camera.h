@@ -12,7 +12,8 @@ extern int width, height;
 
 struct Camera
 {
-	Camera(float fov, float nearZ, float farZ) : FOV(fov), nearZ(nearZ), farZ(farZ) 
+	Camera() = default;
+	explicit Camera(float fov, float nearZ, float farZ) : FOV(fov), nearZ(nearZ), farZ(farZ) 
 	{
 		FOV = std::max(FOV, FOVmin);
 		FOV = std::min(FOV, FOVmax);

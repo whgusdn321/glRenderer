@@ -5,47 +5,23 @@
 #include <memory>
 #include <Model.h>
 
-namespace TexMagFilter 
+enum TexFilter
 {
-    enum TexMagFilter
-    {
-        nearest = GL_NEAREST,
-        linear = GL_LINEAR,
-    };
-}
+    nearest = GL_NEAREST,
+    linear = GL_LINEAR,
+    nearest_mipmap_nearest = GL_NEAREST_MIPMAP_NEAREST,
+    nearest_mipmap_linear = GL_NEAREST_MIPMAP_LINEAR,
+    linear_mipmap_nearest = GL_LINEAR_MIPMAP_NEAREST,
+    linear_mipmap_linear = GL_LINEAR_MIPMAP_LINEAR,
+};
 
-namespace TexMinFilter
+enum TexWrap
 {
-    enum TexMinFilter
-    {
-        nearest = GL_NEAREST,
-        linear = GL_LINEAR,
-        nearest_mipmap_nearest = GL_NEAREST_MIPMAP_NEAREST,
-        nearest_mipmap_linear = GL_NEAREST_MIPMAP_LINEAR,
-        linear_mipmap_nearest = GL_LINEAR_MIPMAP_NEAREST,
-        linear_mipmap_linear = GL_LINEAR_MIPMAP_LINEAR,
-    };
-}
-
-namespace TexWrapS
-{
-    enum TexWrapS
-    {
-        repeat = GL_REPEAT,
-        clamp_to_edge = GL_CLAMP_TO_EDGE,
-        mirrored_repeat = GL_MIRRORED_REPEAT
-    };
-}
-
-namespace TexWrapT
-{
-    enum TexWrapT
-    {
-        repeat = GL_REPEAT,
-        clamp_to_edge = GL_CLAMP_TO_EDGE,
-        mirrored_repeat = GL_MIRRORED_REPEAT
-    };
-}
+    repeat = GL_REPEAT,
+    clamp_to_edge = GL_CLAMP_TO_EDGE,
+    clamp_to_border = GL_CLAMP_TO_BORDER,
+    mirrored_repeat = GL_MIRRORED_REPEAT
+};
 
 class TextureGL
 {
@@ -71,11 +47,12 @@ protected:
 class TextureGL2D : public TextureGL
 {
 public:
+    TextureGL2D() {}
     explicit TextureGL2D(std::shared_ptr<Texture> texture, 
-        TexMagFilter::TexMagFilter magFilter,
-        TexMinFilter::TexMinFilter minFilter,
-        TexWrapS::TexWrapS texWrapS,
-        TexWrapT::TexWrapT texWrapT)
+        TexFilter magFilter,
+        TexFilter minFilter,
+        TexWrap texWrapS,
+        TexWrap texWrapT)
     {
         type = texture->type;
         glGenTextures(1, &texID);
@@ -91,17 +68,17 @@ public:
             format = GL_RGBA;
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->width, texture->height, 0, format, GL_UNSIGNED_BYTE, texture->data);
 
-        if (!(minFilter == TexMinFilter::nearest || minFilter == TexMinFilter::linear))
+        if (!(minFilter == TexFilter::nearest || minFilter == TexFilter::linear))
             glGenerateMipmap(GL_TEXTURE_2D);
     }
 
     explicit TextureGL2D(std::string type,
         unsigned int width,
         unsigned int height,
-        TexMagFilter::TexMagFilter magFilter,
-        TexMinFilter::TexMinFilter minFilter,
-        TexWrapS::TexWrapS texWrapS,
-        TexWrapT::TexWrapT texWrapT)
+        TexFilter magFilter,
+        TexFilter minFilter,
+        TexWrap texWrapS,
+        TexWrap texWrapT)
     {
         this->type = type;
         glGenTextures(1, &texID);
@@ -110,16 +87,11 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, texWrapT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
-
-
-        if (type == "depth_texture")
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-
     }
 
     ~TextureGL2D()
     {
-        glDeleteTextures(1, &texID);
+        //glDeleteTextures(1, &texID);
     }
 };
 

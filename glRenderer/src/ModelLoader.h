@@ -17,6 +17,7 @@ enum ModelLoadType {
     Object,
     Skybox,
     Floor,
+    DebugQuad,
 };
 
 class ModelLoader
@@ -33,6 +34,7 @@ private:
     std::shared_ptr<Model> loadObjectModel(std::string modelName);
     std::shared_ptr<Model> loadSkyboxModel(std::string modelName);
     std::shared_ptr<Model> loadFloorModel(std::string modelName);
+    std::shared_ptr<Model> loadDebugQuad(std::string modelName);
     void processNode(std::shared_ptr<Model> model, aiNode* aiNode, const aiScene* aiScene, glm::mat4& transform);
     Mesh processMesh(aiMesh* aiMesh, const aiScene* aiScene);
 

@@ -33,6 +33,7 @@ const int shadowWidth = 1024;
 const int shadowHeight = 1024;
 
 Camera camera(60.f, 0.01f, 100.f);
+Camera lightCamera;
 Trackball trackball(camera);
 
 //mouse
@@ -79,23 +80,29 @@ int main()
 
     RenderHelper renderHelper;
 
-    ModelWithShader model(phongLightShdr, Object, "rodin");
-    ModelWithShader floorModel(phongLightShdr, Floor, "floor");
+    ModelWithShader model(phongLightShadowShdr, Object, "rodin");
+    ModelWithShader floor(phongLightShadowShdr, Floor, "floor");
     ModelWithShader hlModel(singleColorShdr, Object, "rodin");
     ModelWithShader skyboxModel(skyBoxShdr, Skybox, "sky");
 
+    ModelWithShader modelDepth(depthShdr, Object, "rodin");
+    ModelWithShader floorDepth(depthShdr, Floor, "floor");
+    ModelWithShader debugQuad(debugQuadShdr, DebugQuad, "quad");
+
     camera.setPosition(0.0f, 0.0f, 5.0f); // -1.5f, 3.f, 3.f
     camera.setLookAtTargetRotation(glm::vec3(0.0f, 0.f, 0.0f));
-
+    
     Config config;
     ConfigPanel configPanel(window, config);
     initConfigPanel(configPanel, config, model, hlModel, skyboxModel);
 
-    renderHelper.setupStaticUniforms(model.shaderGL, phongLightShdr);
-    renderHelper.setupStaticUniforms(floorModel.shaderGL, phongLightShdr);
+    renderHelper.setupStaticUniforms(model.shaderGL, phongLightShadowShdr);
+    renderHelper.setupStaticUniforms(floor.shaderGL, phongLightShadowShdr);
     renderHelper.setupStaticUniforms(hlModel.shaderGL, singleColorShdr);
     renderHelper.setupStaticUniforms(skyboxModel.shaderGL, skyBoxShdr);
+    renderHelper.setupStaticUniforms(debugQuad.shaderGL, debugQuadShdr);
 
+    renderHelper.setupShadowFBO(shadowWidth, shadowHeight);
     float beforeFrameX = lastMouseX;
     float beforeFrameY = lastMouseY;
 
@@ -119,15 +126,26 @@ int main()
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-        renderHelper.setupCameraUniform(model.shaderGL, phongLightShdr);
-        renderHelper.drawObject(model.shaderGL, phongLightShdr, model.modelPtr);
-        renderHelper.drawFloor(floorModel.shaderGL, phongLightShdr, floorModel.modelPtr, model.modelPtr->rootAABB);
+        renderHelper.setupCameraUniform(model.shaderGL, model.shaderType);
+
+		glViewport(0, 0, shadowWidth, shadowHeight);
+		glBindFramebuffer(GL_FRAMEBUFFER, renderHelper.getDepthMapFBO());
+		glClear(GL_DEPTH_BUFFER_BIT);
+        renderHelper.drawShadowMap(modelDepth);
+        renderHelper.drawShadowMap(floorDepth);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, width, height);
+        
+        //renderHelper.drawDebugQuad(debugQuad);
+
+        renderHelper.drawObject(model);
+        renderHelper.drawFloor(floor);
 
         if (config.highlightBoundary) {
             glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
             glStencilMask(0x00);
             renderHelper.setupCameraUniform(hlModel.shaderGL, singleColorShdr);
-            renderHelper.drawObject(hlModel.shaderGL, singleColorShdr, hlModel.modelPtr);
+            renderHelper.drawObject(hlModel);
             glStencilMask(0xFF);
             glStencilFunc(GL_ALWAYS, 1, 0xFF);
         }

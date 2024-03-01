@@ -214,8 +214,14 @@
     <None Include="shaders\1.light_cube.vs">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </None>
+    <None Include="shaders\debug_quad.fs" />
+    <None Include="shaders\debug_quad.vs" />
+    <None Include="shaders\depth.fs" />
+    <None Include="shaders\depth.vs" />
     <None Include="shaders\phong_light.fs" />
     <None Include="shaders\phong_light.vs" />
+    <None Include="shaders\phong_light_shadow.fs" />
+    <None Include="shaders\phong_light_shadow.vs" />
     <None Include="shaders\singlecolor.fs" />
     <None Include="shaders\singlecolor.vs" />
     <None Include="shaders\skybox.fs" />

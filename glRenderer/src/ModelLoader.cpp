@@ -22,6 +22,8 @@ std::shared_ptr<Model> ModelLoader::loadModel(ModelLoadType modelType, std::stri
         model = loadSkyboxModel(modelName);
     else if (modelType == Floor)
         model = loadFloorModel(modelName);
+    else if (modelType == DebugQuad)
+        model = loadDebugQuad(modelName);
 
     modelCache[modelName] = model;
     return model;
@@ -49,6 +51,42 @@ std::shared_ptr<Model> ModelLoader::loadObjectModel(std::string modelName)
     processNode(model, scene->mRootNode, scene, curTransform);
 
     model->centeredTransform = adjustModelCenter(model->rootAABB);
+    return model;
+}
+
+std::shared_ptr<Model> ModelLoader::loadDebugQuad(std::string modelName)
+{
+    std::shared_ptr<Model> model = std::make_shared<Model>();
+    model->primitiveCnt = 2;
+    model->vertexCnt = 4;
+
+    Mesh mesh;
+    mesh.meshPrimitiveCnt = 2;
+
+    float quadVertices[] = {
+        // positions                // texcoords
+         -1.0f, -1.0f, 0.f,   0.0f,  0.0f, // 7'o clock
+        1.0f, 1.0f, 0.0f,    1.0f,  1.0f, // 1 
+        1.0f, -1.0f, 0.0f,   1.0f, 0.0f, // 5 
+
+         -1.0f, -1.0f, 0.0f,   0.0f,  0.0f, // 7 
+        1.0f, 1.0f, 0.0f,     1.0f, 1.0f, // 1 
+         -1.0f, 1.0f, 0.0f,   0.0f, 1.0f // 11
+    };
+
+    for (int i = 0; i < 6; ++i)
+    {
+        Vertex v;
+        v.position.x = quadVertices[i * 5];
+        v.position.y = quadVertices[i * 5 + 1];
+        v.position.z = quadVertices[i * 5 + 2];
+        v.texCoords.s = quadVertices[i * 5 + 3];
+        v.texCoords.t = quadVertices[i * 5 + 4];
+        mesh.vertices.push_back(v);
+    }
+
+    model->meshes.push_back(mesh);
+    model->modelName = "quad";
     return model;
 }
 
@@ -99,6 +137,7 @@ std::shared_ptr<Model> ModelLoader::loadFloorModel(std::string modelName)
     model->centeredTransform = glm::mat4(1.f);
 
     model->meshes.push_back(mesh);
+    model->modelName = "floor";
     return model;
 }
 

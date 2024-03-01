@@ -12,8 +12,11 @@
 
 enum ShaderType {
 	phongLightShdr = 0,
+	phongLightShadowShdr,
 	singleColorShdr,
 	skyBoxShdr,
+	depthShdr,
+	debugQuadShdr,
 };
 
 struct ModelWithShader 
@@ -63,7 +66,7 @@ struct ModelWithShader
 					if (textureGLCache.find(tx->texPath) == textureGLCache.end())
 					{
 						std::shared_ptr<TextureGL> outTx = std::make_shared<TextureGL2D>(
-							tx, TexMagFilter::linear, TexMinFilter::nearest_mipmap_linear, TexWrapS::repeat, TexWrapT::repeat
+							tx, TexFilter::linear, TexFilter::nearest_mipmap_linear, TexWrap::repeat, TexWrap::repeat
 							);
 						textureGLCache[tx->texPath] = outTx;
 					}
@@ -98,6 +101,14 @@ struct ModelWithShader
 		std::string vsPath, fsPath;
 		switch (shaderType)
 		{
+		case debugQuadShdr:
+			vsPath = "./shaders/debug_quad.vs";
+			fsPath = "./shaders/debug_quad.fs";
+			break;
+		case depthShdr:
+			vsPath = "./shaders/depth.vs";
+			fsPath = "./shaders/depth.fs";
+			break;
 		case skyBoxShdr:
 			vsPath = "./shaders/skybox.vs";
 			fsPath = "./shaders/skybox.fs";
@@ -105,6 +116,10 @@ struct ModelWithShader
 		case singleColorShdr:
 			vsPath = "./shaders/singlecolor.vs";
 			fsPath = "./shaders/singlecolor.fs";
+			break;
+		case phongLightShadowShdr:
+			vsPath = "./shaders/phong_light_shadow.vs";
+			fsPath = "./shaders/phong_light_shadow.fs";
 			break;
 		case phongLightShdr:
 		default:
