@@ -1,6 +1,6 @@
 # GLRenderer
 GLRenderer is my personal renderer project made with C++, OpenGL3, GLFW.
-GUI is made with ImGUI. I designed this project to have a simple and reusable code structure.
+GUI is made with ImGUI. Designed this project to have a simple and reusable code structure.
 
 # Features(Implemented):
 - Multiple model loading
@@ -11,20 +11,18 @@ GUI is made with ImGUI. I designed this project to have a simple and reusable co
 - Bounding Box culling
 - Automatic Model Position Conversion
 - Shadow(Directional Light)
+
+# Video
+![gif_shadow](https://github.com/whgusdn321/glRenderer/assets/43023361/adbfc3cd-e1d4-494b-ad79-ab90dc28dcc7)
+
 # Captured Image
-## rodin
-![glRenderer_XSt9Rf5ATl](https://github.com/whgusdn321/glRenderer/assets/43023361/b059e69a-3d2f-4b03-b14d-c14a05b73b08)
+## Rodin
+![rodin](https://github.com/whgusdn321/glRenderer/assets/43023361/52a953bb-f8f7-41a2-8e3f-84017b22e1b4)
+
+## School Uniform
+![school_uniform](https://github.com/whgusdn321/glRenderer/assets/43023361/edca295c-a42b-4496-a03a-ee5b6eec81b4)
+
+## Guitar(highlighted)
+![guitar](https://github.com/whgusdn321/glRenderer/assets/43023361/6c36ac6a-ac93-4569-bef3-411dade09e60)
 
 
-## rodin + skybox
-![glRenderer_yy4hMpdIEe](https://github.com/whgusdn321/glRenderer/assets/43023361/cc7e0dee-14b0-4eb5-b25d-cceb33adb21e)
-
-
-## dog + highlight model
-![glRenderer_jENFPXvjQn](https://github.com/whgusdn321/glRenderer/assets/43023361/5522a739-fd08-40fa-84b8-706ca1e957dd)
-
-## school uniform + skybox
-![glRenderer_D8C3uK1Ok1](https://github.com/whgusdn321/glRenderer/assets/43023361/4de2463b-97be-414f-98c7-148ebb56a055)
-
-# Captured GIF
-![gif9mb](https://github.com/whgusdn321/glRenderer/assets/43023361/b83d83f3-e4c5-4b2d-94ff-8f350d892466)
