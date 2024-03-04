@@ -78,7 +78,14 @@ void ShaderGL::setBool(const std::string& name, bool value) const
 // ------------------------------------------------------------------------
 void ShaderGL::setInt(const std::string& name, int value) const
 {
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+    GLint loc = glGetUniformLocation(ID, name.c_str());
+    ///if (loc < 0)
+    //{
+    //    std::cout << "name : " << name << " uniform is inActive or not exist!" << std::endl;
+    //    return;
+    // }
+    glUniform1i(loc, value);
+    //glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 }
 
 // ------------------------------------------------------------------------

@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <Model.h>
+#include <iostream>
 
 enum TexFilter
 {
@@ -62,7 +63,6 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
 
-
         GLenum format = GL_RGB;
         if (texture->nrChannels == 4)
             format = GL_RGBA;
@@ -90,9 +90,7 @@ public:
     }
 
     ~TextureGL2D()
-    {
-        //glDeleteTextures(1, &texID);
-    }
+    { }
 };
 
 class TextureGLCubemap : public TextureGL

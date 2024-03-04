@@ -34,6 +34,7 @@ std::shared_ptr<Model> ModelLoader::loadObjectModel(std::string modelName)
     std::shared_ptr<Model> model = std::make_shared<Model>();
     model->directory = "./model/" + modelName + '/';
     model->path = model->directory + modelName + ".obj";
+    model->modelName = modelName;
     this->directory = model->directory;
 
     Assimp::Importer importer;

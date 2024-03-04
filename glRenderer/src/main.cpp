@@ -24,7 +24,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 void enableStencilHl();
 void disableStencilHl();
-void initConfigPanel(ConfigPanel&, Config&, ModelWithShader&, ModelWithShader&, ModelWithShader&);
+void initConfigPanel(ConfigPanel&, Config&, ModelWithShader&, ModelWithShader&, ModelWithShader&, ModelWithShader&, const RenderHelper&);
 
 //viewport
 int width = 800;
@@ -94,7 +94,7 @@ int main()
     
     Config config;
     ConfigPanel configPanel(window, config);
-    initConfigPanel(configPanel, config, model, hlModel, skyboxModel);
+    initConfigPanel(configPanel, config, model, modelDepth, hlModel, skyboxModel, renderHelper);
 
     renderHelper.setupStaticUniforms(model.shaderGL, phongLightShadowShdr);
     renderHelper.setupStaticUniforms(floor.shaderGL, phongLightShadowShdr);
@@ -103,6 +103,7 @@ int main()
     renderHelper.setupStaticUniforms(debugQuad.shaderGL, debugQuadShdr);
 
     renderHelper.setupShadowFBO(shadowWidth, shadowHeight);
+
     float beforeFrameX = lastMouseX;
     float beforeFrameY = lastMouseY;
 
@@ -263,12 +264,20 @@ void disableStencilHl()
    glDisable(GL_STENCIL_TEST);
 }
 
-void initConfigPanel(ConfigPanel& configPanel, Config& config, ModelWithShader& model, ModelWithShader& hlModel, ModelWithShader& skyboxModel)
+void initConfigPanel(ConfigPanel& configPanel, Config& config, ModelWithShader& model, ModelWithShader& modelDepth,
+    ModelWithShader& hlModel, ModelWithShader& skyboxModel, const RenderHelper& rhpr)
 {
     configPanel.setReloadModelFunc([&](const std::string modelName) -> void {
+        std::cout << "model changed from:" << model.modelPtr->modelName
+            <<" to:" << modelName << std::endl;
+        rhpr.unsetSamplers(model.shaderGL, model.shaderType);
+
         config.modelName = modelName;
+
         model.setModel(Object, modelName);
+        modelDepth.setModel(Object, modelName);
         hlModel.setModel(Object, modelName);
+
         config.primitiveCnt = model.modelPtr->primitiveCnt;
         });
     configPanel.setReloadSkyboxModelFunc([&](const std::string modelName) -> void {

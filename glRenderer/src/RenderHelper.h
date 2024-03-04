@@ -4,7 +4,7 @@
 #include <memory>
 #include <map>
 #include <string>
-#include <functional>
+#include <iostream>
 
 #include "Model.h"
 #include "VertexGL.h"
@@ -119,26 +119,28 @@ public:
 
 	void setupPhongLightSampler(std::shared_ptr<ShaderGL> sPtr, const Mesh& mesh)
 	{
-		unsigned int diffuseNr = 1;
-		unsigned int specularNr = 1;
+		unsigned int diffuseNr = 0;
+		unsigned int specularNr = 0;
 		unsigned int i = 0;
-		for (i = 0; i < mesh.textureGLs.size(); ++i)
-		{
-			glActiveTexture(GL_TEXTURE0 + i);
-			auto texGLPtr = mesh.textureGLs[i];
-			std::string texType = texGLPtr->getType();
-			std::string number;
 
+		std::string number;
+
+		for (const auto& texturePtr : mesh.textureGLs)
+		{
+			const std::string& texType = texturePtr->getType();
 			if (texType == "texture_diffuse")
 				number = std::to_string(diffuseNr++);
 			else if (texType == "texture_specular")
 				number = std::to_string(specularNr++);
+			else
+				continue;
 
 			sPtr->setInt("material." + texType + '[' + number + ']', i);
-
-			glBindTexture(GL_TEXTURE_2D, texGLPtr->getID());
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, texturePtr->getID());
+			i++;
 		}
-		++i;
+					
 		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(GL_TEXTURE_2D, depthMapTXT);
 		sPtr->setInt("depthMap", i);
@@ -150,7 +152,6 @@ public:
 		sPtr->setInt("depthMap", 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMapTXT);
-		glActiveTexture(GL_TEXTURE0);
 	}
 
 	void setupSkyboxSampler(std::shared_ptr<ShaderGL> sPtr, const Mesh& mesh)
@@ -161,18 +162,9 @@ public:
 		glBindTexture(GL_TEXTURE_CUBE_MAP, texGLPtr->getID());
 	}
 
-	void unsetSkyboxSampler(std::shared_ptr<ShaderGL> sPtr, const Mesh& mesh)
-	{
-		for (unsigned int i = 0; i < mesh.textureGLs.size(); ++i)
-		{
-			glActiveTexture(GL_TEXTURE0 + i);
-			glBindTexture(GL_TEXTURE_2D, 0);
-		}
-		glActiveTexture(GL_TEXTURE0);
-	}
-
 	void setupSamplers(std::shared_ptr<ShaderGL> sPtr, ShaderType shdrType, const Mesh& mesh)
 	{
+		sPtr->use();
 		switch (shdrType) {
 		case skyBoxShdr:
 			setupSkyboxSampler(sPtr, mesh);
@@ -191,29 +183,55 @@ public:
 		}
 	}
 
-	void unsetSamplers(const Mesh& mesh)
+	void unsetSkyboxSampler(std::shared_ptr<ShaderGL> sPtr) const
 	{
-		for (int i = 0; i < mesh.textureGLs.size(); ++i)
+		sPtr->setInt("skybox", defaultTexUnit);
+	}
+
+	void unsetPhongLightSampler(std::shared_ptr<ShaderGL> sPtr) const
+	{
+		std::string number;
+		for (int i = 0; i < 8; ++i)
 		{
-			glActiveTexture(GL_TEXTURE0 + i);
-			glBindTexture(GL_TEXTURE_2D, 0);
-			glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+			number = std::to_string(i);
+			sPtr->setInt("material.texture_diffuse[" + number + ']', defaultTexUnit);
+			sPtr->setInt("material.texture_specular[" + number + ']', defaultTexUnit);
 		}
-		glActiveTexture(GL_TEXTURE0);
+		sPtr->setInt("depthMap", defaultTexUnit);
+	}
+
+	void unsetSamplers(std::shared_ptr<ShaderGL> sPtr, ShaderType shdrType) const
+	{
+		sPtr->use();
+		switch (shdrType) {
+		case skyBoxShdr:
+			unsetSkyboxSampler(sPtr);
+			break;
+		case singleColorShdr:
+			break;
+		case phongLightShadowShdr:
+		case phongLightShdr:
+			unsetPhongLightSampler(sPtr);
+			break;
+		case debugQuadShdr:
+		case depthShdr:
+		default:
+			break;
+		}
 	}
 
 	void setupShadowFBO(const unsigned int width, const unsigned int height)
 	{
 		glGenFramebuffers(1, &depthMapFBO);
 		depthMap = TextureGL2D("depth_texture", width, height, TexFilter::nearest, TexFilter::nearest,
-			TexWrap::clamp_to_border, TexWrap::clamp_to_border); // TextureGL2D()를 호출하는 순간 객체 하나 생기고, depthMap의 객체의 assign operator호출. 그다음, 함수 종료때 destructor 호출. 따라서 texture delete삭제해줘야함..
+			TexWrap::clamp_to_border, TexWrap::clamp_to_border);
 		depthMapTXT = depthMap.getID();
-		glBindTexture(GL_TEXTURE_2D, depthMap.getID());
+		glBindTexture(GL_TEXTURE_2D, depthMapTXT);
 		float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
 		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap.getID(), 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTXT, 0);
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -244,15 +262,16 @@ public:
 			}
 
 			const BoundingBox transformedBbox = mesh.aabb.transform(viewMat * modelMat);
-			if (camera.checkBound(transformedBbox) == BoundCheckRet::Outside)
+			if (camera.checkBound(transformedBbox) == BoundCheckRet::Outside) {
 				continue;
+			}
 
 			setupSamplers(sPtr, sType, mesh);
 			setupModelUniform(sPtr, sType, trackball.getRotationMatrix() * modelMat);
 			mesh.vertexGL->bind();
 			glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
 			mesh.vertexGL->unBind();
-			unsetSamplers(mesh);	
+			unsetSamplers(sPtr, sType);	
 		}
 	}
 
@@ -276,7 +295,7 @@ public:
 			mesh.vertexGL->bind();
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			mesh.vertexGL->unBind();
-			unsetSamplers(mesh);
+			unsetSamplers(sPtr, sType);
 		}
 	}
 
@@ -310,16 +329,10 @@ public:
 		mdlshdr.shaderGL->use();
 		mdlshdr.shaderGL->setMat4f("lightSpaceMatrix", lightSpaceMatrix);
 
-		//glViewport(0, 0, shadowWidth, shadowHeight);
-		//glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-		//glClear(GL_DEPTH_BUFFER_BIT);
-
 		if (mdlshdr.modelName == "floor")
 			drawFloor(mdlshdr);
 		else
 			drawObject(mdlshdr);
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//glViewport(0, 0, width, height);
 	}
 
 	void drawDebugQuad(const ModelWithShader& mdlshdr)
@@ -336,7 +349,7 @@ public:
 			mesh.vertexGL->bind();
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			mesh.vertexGL->unBind();
-			unsetSamplers(mesh);
+			unsetSamplers(sPtr, sType);
 		}
 	}
 
@@ -353,5 +366,5 @@ private:
 	glm::mat4 lightProjection;
 	glm::mat4 lightView;
 	glm::mat4 lightSpaceMatrix;
-
+	GLint defaultTexUnit = 31; //glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTexUnit);
 };
